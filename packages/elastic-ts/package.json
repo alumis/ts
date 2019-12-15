@@ -1,0 +1,22 @@
+{
+  "name": "elastic-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alumis/elastic.git"
+  },
+  "keywords": [
+    "elastic"
+  ],
+  "author": "Emil Muller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alumis/elastic/issues"
+  },
+  "homepage": "https://github.com/alumis/elastic#readme"
+}
