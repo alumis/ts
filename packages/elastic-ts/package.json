@@ -1,14 +1,11 @@
 {
-  "name": "elastic-ts",
+  "name": "@alumis/elastic-ts",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "A TypeScript front-end web framework that combines JSX together with an observer pattern to build user interfaces",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alumis/elastic.git"
+    "url": "git+https://github.com/alumis/elastic.git",
+    "directory": "packages/elastic-ts"
   },
   "keywords": [
     "elastic"
@@ -18,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/alumis/elastic/issues"
   },
-  "homepage": "https://github.com/alumis/elastic#readme"
+  "homepage": "https://github.com/alumis/elastic#readme",
+  "devDependencies": {
+    "core-js": "^3.5.0"
+  },
+  "typings": "./index.d.ts"
 }
