@@ -118,19 +118,19 @@ declare namespace JSX {
         wbr: HTMLAttributes<HTMLElement>;
     }
 
-    // type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
-    // type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+    type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T];
+    type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;
 
-    // type HTMLAttributes<T extends HTMLElement> = { [P in keyof NonFunctionPropertyNames<T>]?: NonFunctionPropertyNames<T>[P] | Observable<NonFunctionPropertyNames<T>[P]>; } | { [P in keyof AriaAttributes]?: AriaAttributes[P] | Observable<AriaAttributes[P]>; };
+    type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
+    type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
 
-    type HTMLAttributes<T extends HTMLElement> = { [P in keyof T]?: T[P] | Observable<T[P]> | (() => T[P]); } | { [P in keyof AriaAttributes]?: AriaAttributes[P] | Observable<AriaAttributes[P]> | (() => AriaAttributes[P]); } | ClassAttribute;
     type Observable<T> = import("./Observable").Observable<T>;
 
-    interface ClassAttribute {
-
-        class: { [name: string]: boolean | Observable<boolean> | (() => boolean); }
-        switch: Observable<string> | (() => string) | Observable<string>[] | (() => string)[];
-    }
+    type HTMLAttributes<T extends HTMLElement> =
+        | { [P in keyof NonFunctionProperties<T>]?: NonFunctionProperties<T>[P] | Observable<NonFunctionProperties<T>[P]> | (() => NonFunctionProperties<T>[P]); }
+        | { [P in keyof AriaAttributes]?: AriaAttributes[P] | Observable<AriaAttributes[P]> | (() => AriaAttributes[P]); }
+        | { class: string | Observable<string> | (() => string) | (string | Observable<string> | (() => string))[] | { [name: string]: boolean | Observable<boolean> | (() => boolean); }; }
+        | FunctionProperties<T>;
 
     // All the WAI-ARIA 1.1 attributes from https://www.w3.org/TR/wai-aria-1.1/
     interface AriaAttributes {

@@ -4,7 +4,7 @@ import { ModifiableObservable } from "./ModifiableObservable";
 import { isObservable } from "./isObservable";
 import { ObservableList, ObservableListModificationType } from "./ObservableList";
 
-export function initialize() {
+export function bootstrap() {
     window["createNode"] = createNode;
 }
 
@@ -110,7 +110,7 @@ export function appendDisposeCallbackToNode(node: Node, dispose: () => any) {
 
 export function disposeNode(node: Node) {
     if (node.childNodes.length) { // Depth first, post-order tree traversal
-        for (let child = node.firstChild;;) {
+        for (let child = node.firstChild; ;) {
             let lastManagedChild: ChildNode = child[LAST_MANAGED_CHILD_KEY];
             if (lastManagedChild) {
                 while (child !== lastManagedChild)
@@ -156,7 +156,7 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
                 case ObservableListModificationType.InsertBefore: {
                     let item = items.get(m.item);
                     if (item) {
-                        for (let node = item.firstChild;;) {
+                        for (let node = item.firstChild; ;) {
                             if (node === item.lastChild) {
                                 documentFragment.appendChild(node);
                                 break;
@@ -179,7 +179,7 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
                 case ObservableListModificationType.Remove: {
                     let item = items.get(m.item);
                     items.delete(m.item);
-                    for (let node = item.firstChild;;) {
+                    for (let node = item.firstChild; ;) {
                         disposeNode(node);
                         if (node === item.lastChild) {
                             node.remove();
@@ -267,19 +267,53 @@ export function bindProperty(element: Element, name: string, expression: any | O
     }
 }
 
-globalPropertyHandlers.set("class", (element: HTMLElement, value: { [name: string]: boolean | Observable<boolean> | (() => boolean); }) => {
-    for (let p in value) {
-        let expression = value[p];
-        if (isObservable(expression)) {
-            let subscription = (function (p) { return (expression as Observable<any>).subscribeInvoke(n => { element.classList.toggle(p, n); }); })(p);
-            appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+globalPropertyHandlers.set("class", (element: HTMLElement, value: string | Observable<string> | (() => string) | (Observable<string> | (() => string))[] | { [name: string]: boolean | Observable<boolean> | (() => boolean); }) => {
+    if (typeof value === "string")
+        element.className = value;
+    else if (isObservable(value)) {
+        let subscription = (value as Observable<string>).subscribeInvoke(n => { element.className = n; });
+        appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+    }
+    else if (typeof value === "function") {
+        let computedObservable = co(value);
+        computedObservable.subscribeInvoke(n => { element.className = n; });
+        appendDisposeCallbackToNode(element, computedObservable.dispose);
+    }
+    else if (Array.isArray(value)) {
+        for (let i of value as (Observable<string> | (() => string))[]) {
+            if (typeof i === "string")
+                element.classList.add(i);
+            else if (isObservable(i)) {
+                let subscription = (i as Observable<string>).subscribeInvoke((n, o) => {
+                    if (o) element.classList.remove(o);
+                    if (n) element.classList.add(n);
+                });
+                appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+            }
+            else {
+                let computedObservable = co(i as () => string);
+                computedObservable.subscribeInvoke((n, o) => {
+                    if (o) element.classList.remove(o);
+                    if (n) element.classList.add(n);
+                });
+                appendDisposeCallbackToNode(element, computedObservable.dispose);
+            }
         }
-        else if (typeof expression === "function") {
-            let computedObservable = co(expression);
-            (function (p) { computedObservable.subscribeInvoke(n => { element.classList.toggle(p, n); }); })(p);
-            appendDisposeCallbackToNode(element, computedObservable.dispose);
+    }
+    else {
+        for (let p in value) {
+            let expression = value[p] as boolean | Observable<boolean> | (() => boolean);
+            if (isObservable(expression)) {
+                let subscription = (function (p) { return (expression as Observable<any>).subscribeInvoke(n => { element.classList.toggle(p, n); }); })(p);
+                appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+            }
+            else if (typeof expression === "function") {
+                let computedObservable = co(expression);
+                (function (p) { computedObservable.subscribeInvoke(n => { element.classList.toggle(p, n); }); })(p);
+                appendDisposeCallbackToNode(element, computedObservable.dispose);
+            }
+            else element.classList.toggle(p, expression as boolean);
         }
-        else element.classList.toggle(p, expression as boolean);
     }
 });
 
@@ -301,6 +335,6 @@ export function Managed(_attributes: {}, children: any[]) {
     documentFragment.appendChild(comment);
     for (let c of children)
         appendChild(documentFragment, c);
-    comment[LAST_MANAGED_CHILD_KEY] = documentFragment.lastChild;        
+    comment[LAST_MANAGED_CHILD_KEY] = documentFragment.lastChild;
     return documentFragment;
 }
