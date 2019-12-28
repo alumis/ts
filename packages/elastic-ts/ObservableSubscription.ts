@@ -64,6 +64,13 @@ export class ObservableSubscription<T> {
      */
     next: ObservableSubscription<T>;
 
+    private _suspendedCallback: T;
+    private _suspendedValue: T;
+
+    suspend() {
+
+    }
+
     /**
      * Recycles a subscription (places it in the bin) such that it may be reused.
      * @remarks
@@ -89,4 +96,8 @@ export class ObservableSubscription<T> {
         (this.previous.next = this.next).previous = this.previous;
         this.recycle();
     };
+}
+
+function doNothingCallback() {
+
 }

@@ -18,6 +18,5 @@
   "homepage": "https://github.com/alumis/elastic#readme",
   "devDependencies": {
     "core-js": "^3.5.0"
-  },
-  "typings": "./index.d.ts"
+  }
 }
