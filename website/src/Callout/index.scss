@@ -1,0 +1,48 @@
+@import "../scss/base";
+
+//
+// Callouts
+//
+
+.callout {
+
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-left: .25rem solid color-level($primary, -9); //color-level($primary, -10);
+
+    @include mdc-elevation(1);
+
+    h4 {
+        margin-bottom: .25rem;
+    }
+
+    p:last-child {
+        margin-bottom: 0;
+    }
+
+    +.callout {
+        margin-top: -.25rem;
+    }
+}
+
+// Variations
+@mixin bs-callout-variant($color) {
+    border-left-color: $color;
+
+    h4 {
+        color: $color;
+    }
+}
+
+// .callout-info {
+//     @include bs-callout-variant($bd-info);
+// }
+
+// .callout-warning {
+//     @include bs-callout-variant($bd-warning);
+// }
+
+// .callout-danger {
+//     @include bs-callout-variant($bd-danger);
+// }

@@ -1,0 +1,1 @@
+export default ["M12 11L6 5l-6 6h12z",12,16]

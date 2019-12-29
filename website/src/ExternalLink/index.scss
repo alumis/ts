@@ -1,0 +1,12 @@
+.external-link {
+
+    white-space: nowrap; // In case the icon is orphaned on a new line (&nbsp; does not work)
+}
+
+.external-link-icon {
+
+    margin: 0 .25em 0 (1em/3);
+    position: relative;
+    top: .125em;
+    vertical-align: baseline;
+}

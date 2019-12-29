@@ -1,0 +1,16 @@
+@import "../scss/base";
+
+.main-header-for-medium-and-up {
+
+    align-items: center;
+    background: $main-header-background;
+    color: color-yiq($main-header-background);
+    display: flex;
+    justify-content: space-between;
+    padding: .5rem 1rem .5rem (60rem / 16);
+
+    .brand {
+
+        font-size: 2rem;
+    }
+}

@@ -1,0 +1,1 @@
+export default ["M8 12H0V4h8v8z",8,16]

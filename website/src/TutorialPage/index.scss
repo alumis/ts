@@ -1,0 +1,49 @@
+@import "../scss/base";
+
+.tutorial-page {
+
+    display: flex;
+
+    .tutorial-page-body {
+
+        flex: 2;
+        min-height: 100%;
+        padding: 1.25rem;
+
+        .tutorial-page-paper {
+
+            max-width: 21cm;
+
+            .highlighted-code {
+
+                margin-left: -.5rem;
+                width: calc(100% + 1rem);
+            }
+        }
+    }
+}
+
+%heading {
+    margin-top: 0; // 1
+    margin-bottom: $headings-margin-bottom;
+    font-family: $headings-font-family;
+    font-style: $headings-font-style;
+    font-weight: $headings-font-weight;
+    line-height: $headings-line-height;
+    color: $headings-color;
+}
+
+.tutorial-page-toc {
+
+    background: $gray-100;
+    flex: 1;
+    height: 100vh;
+    overflow: auto;
+    padding: 1.25rem;
+
+    h1 {
+
+        @extend %heading;
+        @include font-size($h4-font-size);
+    }
+}

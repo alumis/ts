@@ -1,0 +1,1 @@
+declare function generateTypings(): { [filePath: string]: string;  };

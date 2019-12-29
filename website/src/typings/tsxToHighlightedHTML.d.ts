@@ -1,0 +1,1 @@
+declare function tsxToHighlightedHTML(tsx: string): string;
