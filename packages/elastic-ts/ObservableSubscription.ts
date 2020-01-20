@@ -10,7 +10,7 @@ let bin: ObservableSubscription<any>[] = [], binLength = 0;
 export class ObservableSubscription<T> {
 
     constructor() {
-        this.unsubscribeAndRecycle = this.unsubscribeAndRecycle.bind(this);
+        this.dispose = this.dispose.bind(this);
     }
 
     /**
@@ -78,9 +78,9 @@ export class ObservableSubscription<T> {
      * @internal
      */
     recycle() {
-        delete this.callback;
-        delete this.previous;
-        delete this.next;
+        this.callback = null;
+        this.previous = null;
+        this.next = null;
         if (bin.length === binLength)
             bin.push(this);
         else bin[binLength] = this;
@@ -92,12 +92,8 @@ export class ObservableSubscription<T> {
      * @remarks
      * After invocation, for long-lived scopes, you should expunge any reference you have to it to accommodate the GC.
      */
-    unsubscribeAndRecycle() {
+    dispose() {
         (this.previous.next = this.next).previous = this.previous;
         this.recycle();
     };
-}
-
-function doNothingCallback() {
-
 }

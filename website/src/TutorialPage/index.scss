@@ -3,24 +3,28 @@
 .tutorial-page {
 
     display: flex;
+}
 
-    .tutorial-page-body {
+.tutorial-page-body {
 
-        flex: 2;
-        min-height: 100%;
-        padding: 1.25rem;
+    flex: 2;
+    min-height: 100%;
+    padding: 1.25rem;
+}
 
-        .tutorial-page-paper {
+.tutorial-page-paper {
 
-            max-width: 21cm;
+    max-width: 21cm;
+}
 
-            .highlighted-code {
+.tutorial-page-example-toolbar {
+    border: 1px solid $border-color;
+}
 
-                margin-left: -.5rem;
-                width: calc(100% + 1rem);
-            }
-        }
-    }
+.tutorial-page-example-output {
+
+    background: $gray-100;
+    border: 1px solid $border-color;
 }
 
 %heading {
@@ -40,6 +44,8 @@
     height: 100vh;
     overflow: auto;
     padding: 1.25rem;
+    position: sticky;
+    top: 0;
 
     h1 {
 

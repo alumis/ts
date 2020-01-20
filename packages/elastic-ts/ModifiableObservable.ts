@@ -82,7 +82,7 @@ export class ModifiableObservable<T> implements Observable<T> {
     }
 
     dispose() {
-        delete this.wrappedValue;
+        this.wrappedValue = null;
         for (let node = this._subscriptionHead.next; node !== this._subscriptionTail;) {
             let currentNode = node;
             node = node.next;
@@ -96,7 +96,7 @@ export class ModifiableObservable<T> implements Observable<T> {
     }
 }
 
-export function mo<T>(value?: T): ModifiableObservable<T> {
+export function o<T>(value?: T): ModifiableObservable<T> {
     if (binLength) {
         var result = <ModifiableObservable<T>>bin[--binLength];
         bin[binLength] = null;

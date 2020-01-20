@@ -1,8 +1,9 @@
 declare namespace IndexScssModule {
   export interface IIndexScss {
-    highlightedCode: string;
     tutorialPage: string;
     tutorialPageBody: string;
+    tutorialPageExampleOutput: string;
+    tutorialPageExampleToolbar: string;
     tutorialPagePaper: string;
     tutorialPageToc: string;
   }

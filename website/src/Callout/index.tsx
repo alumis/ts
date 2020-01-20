@@ -1,6 +1,6 @@
 import calloutStyles from "./index.scss";
 
-export default function Callout(properties: JSX.HTMLAttributes<HTMLDivElement>, children: any[]) {
+export function Callout(properties: JSX.HTMLAttributes<HTMLDivElement>, children: any[]) {
 
     let result = <aside {...properties}>{children}</aside> as HTMLDivElement;
 

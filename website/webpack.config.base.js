@@ -6,7 +6,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { InjectManifest } = require("workbox-webpack-plugin");
 
-const packageJson = require("./package.json.js");
+const packageJson = require("./package.json");
 
 const TerserJSPlugin = require("terser-webpack-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
@@ -32,7 +32,8 @@ module.exports = options => {
     }
 
     let copyWebpackPluginArgs = [
-        { from: "./src/fonts", to: "" }
+        "./src/fonts",
+        "./src/require.min.js"
     ];
 
     let babelLoaderPresets = ["@babel/preset-typescript"];
@@ -45,11 +46,13 @@ module.exports = options => {
         performance: { hints: false },
 
         entry: {
-            main: "./src/index.ts"
+            main: "./src/index.tsx"
         },
         output: {
+            globalObject: "self",
             filename: "[name].[contenthash].js",
-            path: path.resolve(__dirname, "./", options.path)
+            path: path.resolve(__dirname, "./", options.path),
+            publicPath: "/"
         },
         resolve: {
             extensions: [".ts", ".tsx", ".js", ".scss"],
@@ -57,6 +60,10 @@ module.exports = options => {
         },
         module: {
             rules: [
+                // {
+                //     test: /\.worker\.ts$/,
+                //     use: { loader: 'worker-loader' }
+                // },
                 {
                     test: /\.(js|ts|tsx)$/,
                     exclude: /\/monaco-editor/,
@@ -68,7 +75,7 @@ module.exports = options => {
                         sourceType: "unambiguous",
                         presets: babelLoaderPresets,
                         plugins: [
-                            "./src/generateTypings-babel-plugin",
+                            "./src/getPackageFiles-babel-plugin",
                             "@babel/proposal-class-properties",
                             ["@babel/plugin-transform-react-jsx", { pragma: "createNode", pragmaFrag: "null" }],
                             "@babel/plugin-syntax-dynamic-import",
@@ -135,25 +142,19 @@ module.exports = options => {
                         "sass-loader"
                     ]
                 },
-
-
-
-
                 {
                     test: /\/monaco-editor\/.+\.ts?$/,
                     use: "ts-loader",
                     exclude: /node_modules/
-                  },
-                  {
+                },
+                {
                     test: /\/monaco-editor\/.+\.css$/,
                     use: ["style-loader", "css-loader"]
-                  },
-                  {
+                },
+                {
                     test: /\/monaco-editor\/.+\.ttf$/,
                     use: ['file-loader']
-                  }
-
-
+                }
             ]
         },
         plugins: [
@@ -183,37 +184,37 @@ module.exports = options => {
     let monaco = {
         mode: "development",
         entry: {
-          "editor.worker": "monaco-editor/esm/vs/editor/editor.worker.js",
-          "json.worker": "monaco-editor/esm/vs/language/json/json.worker",
-          "css.worker": "monaco-editor/esm/vs/language/css/css.worker",
-          "html.worker": "monaco-editor/esm/vs/language/html/html.worker",
-          "ts.worker": "monaco-editor/esm/vs/language/typescript/ts.worker"
+            "editor.worker": "monaco-editor/esm/vs/editor/editor.worker.js",
+            "json.worker": "monaco-editor/esm/vs/language/json/json.worker",
+            "css.worker": "monaco-editor/esm/vs/language/css/css.worker",
+            "html.worker": "monaco-editor/esm/vs/language/html/html.worker",
+            "ts.worker": "monaco-editor/esm/vs/language/typescript/ts.worker"
         },
         resolve: {
-          extensions: [".ts", ".js"]
+            extensions: [".ts", ".js"]
         },
         output: {
-          globalObject: "self",
-          filename: "[name].bundle.js",
-          path: path.resolve(__dirname, "./", options.path)
+            globalObject: "self",
+            filename: "[name].bundle.js",
+            path: path.resolve(__dirname, "./", options.path)
         },
-        module: {
-          rules: [
-            {
-              test: /\.ts?$/,
-              use: "ts-loader",
-              exclude: /node_modules/
-            },
-            {
-              test: /\.css$/,
-              use: ["style-loader", "css-loader"]
-            },
-            {
-              test: /\.ttf$/,
-              use: ['file-loader']
-            }
-          ]
-        }
+        // module: {
+        //   rules: [
+        //     {
+        //       test: /\.ts?$/,
+        //       use: "ts-loader",
+        //       exclude: /node_modules/
+        //     },
+        //     {
+        //       test: /\.css$/,
+        //       use: ["style-loader", "css-loader"]
+        //     },
+        //     {
+        //       test: /\.ttf$/,
+        //       use: ['file-loader']
+        //     }
+        //   ]
+        // }
     }
 
     return [result, monaco];

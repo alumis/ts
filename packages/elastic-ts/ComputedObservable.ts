@@ -71,7 +71,7 @@ export class ComputedObservable<T> implements Observable<T> {
         delete this.expression;
         delete this.error;
         let observables = this.observables;
-        observables.forEach(s => { s.unsubscribeAndRecycle(); });
+        observables.forEach(s => { s.dispose(); });
         observables.clear();
         for (let node = this._head.next; node !== this._tail;) {
             let currentNode = node;
@@ -106,7 +106,7 @@ export class ComputedObservable<T> implements Observable<T> {
 
     refresh() {
         let observables = this.observables;
-        observables.forEach(s => { s.unsubscribeAndRecycle(); });
+        observables.forEach(s => { s.dispose(); });
         observables.clear();
         this.initialize();
     }

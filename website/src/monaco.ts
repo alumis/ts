@@ -1,5 +1,7 @@
 import * as monaco from "monaco-editor";
 import { getThemeColors } from "./ElasticWebsite";
+import { packageFiles } from "./packageFiles";
+// import { compile } from "./compile";
 
 monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
   target: monaco.languages.typescript.ScriptTarget.ES2018,
@@ -9,16 +11,19 @@ monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
   moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
   esModuleInterop: true,
   resolveJsonModule: true
-  // noEmit: true,
-  // typeRoots: [ "node_modules/@types" ]
 });
 
-let typings = generateTypings();
+for (let p in packageFiles) {
 
-console.log(typings);
+  switch (p) {
+    case "/node_modules/@alumis/elastic-ts/Observable.ts":
+    case "/node_modules/@alumis/elastic-ts/ObservableSubscription.ts":
+      monaco.editor.createModel(packageFiles[p], "typescript", monaco.Uri.parse("file://" + p));
+      break;
+  }
 
-for (let p in typings)
-  monaco.languages.typescript.typescriptDefaults.addExtraLib(typings[p], "file:///" + p);
+  monaco.languages.typescript.typescriptDefaults.addExtraLib(packageFiles[p], "file://" + p);
+}
 
 // Define a light theme based on css
 
@@ -56,7 +61,7 @@ monaco.editor.defineTheme("elasticTheme", {
   base: "vs",
   inherit: true,
   rules: [
-    { token: "", foreground: getHexColor(themeColors.body), background: getHexColor(themeColors.background) },
+    { token: "", foreground: getHexColor(themeColors.body) },
     { token: "keyword", foreground: getHexColor(themeColors.blue) },
     { token: "comment", foreground: getHexColor(themeColors.green), fontStyle: "italic" }
   ]

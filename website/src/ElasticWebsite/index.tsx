@@ -2,9 +2,9 @@ import "./index.scss";
 
 import { SPA as SPA, HttpStatusCode, Page, PageDirection } from "@alumis/elastic-ts/SPA";
 import { Managed } from "@alumis/elastic-ts/JSX";
-import { mo } from "@alumis/elastic-ts/ModifiableObservable";
+import { o } from "@alumis/elastic-ts/ModifiableObservable";
 
-export default class ElasticWebsite extends SPA<HTMLBodyElement, Node> {
+export class ElasticWebsite extends SPA<HTMLBodyElement, Node> {
 
     constructor() {
         super();
@@ -13,7 +13,7 @@ export default class ElasticWebsite extends SPA<HTMLBodyElement, Node> {
         this.node = <>{() => <Managed>{this.currentPage.value}</Managed>}</>;
     }
 
-    currentPage = mo<Page<Node>>();
+    currentPage = o<Page<Node>>();
 
     get title() {
 

@@ -7,7 +7,6 @@ import { ObservableList, ObservableListModificationType } from "./ObservableList
 export function bootstrap() {
     // @ts-ignore
     self.createNode = createNode;
-    //window["createNode"] = createNode;
 }
 
 export var globalPropertyHandlers = new Map<string, (node: Node, value, properties: { [name: string]: any }) => any>();
@@ -273,7 +272,20 @@ globalPropertyHandlers.set("style", (element: HTMLElement, value: Partial<CSSSty
     Object.assign(element.style, value);
 });
 
-globalPropertyHandlers.set("toggle", (element: HTMLElement, value: { [name: string]: boolean | Observable<boolean> | (() => boolean); }) => {
+globalPropertyHandlers.set("role", (element: HTMLElement, value: string | Observable<string> | (() => string)) => {
+    if (isObservable(value)) {
+        let subscription = (value as Observable<any>).subscribeInvoke(n => { element.setAttribute("role", n); });
+        appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+    }
+    else if (typeof value === "function") {
+        let computedObservable = co(value);
+        computedObservable.subscribeInvoke(n => { element.setAttribute("role", n as any); });
+        appendDisposeCallbackToNode(element, computedObservable.dispose);
+    }
+    else element.setAttribute("role", value as string);
+});
+
+export function toggleClass(element: HTMLElement, value: { [name: string]: boolean | Observable<boolean> | (() => boolean); }) {
     for (let p in value) {
         let expression = value[p] as boolean | Observable<boolean> | (() => boolean);
         if (isObservable(expression)) {
@@ -287,9 +299,11 @@ globalPropertyHandlers.set("toggle", (element: HTMLElement, value: { [name: stri
         }
         else element.classList.toggle(p, expression as boolean);
     }
-});
+}
 
-globalPropertyHandlers.set("switch", (element: HTMLElement, value: Observable<string> | (() => string) | (Observable<string> | (() => string))[]) => {
+globalPropertyHandlers.set("toggle", toggleClass);
+
+export function switchClass(element: HTMLElement, value: Observable<string> | (() => string) | (Observable<string> | (() => string))[]) {
     if (isObservable(value)) {
         let subscription = (value as Observable<string>).subscribeInvoke(n => { element.className = n; });
         appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
@@ -320,7 +334,9 @@ globalPropertyHandlers.set("switch", (element: HTMLElement, value: Observable<st
             }
         }
     }
-});
+}
+
+globalPropertyHandlers.set("switch", switchClass);
 
 function createNodeFromFunction(fn, properties: { [name: string]: any }, children: any[]) {
     if (fn.prototype instanceof Component)
@@ -474,6 +490,7 @@ export type ApplicableNonFunctionProperties<T> = Omit<NonFunctionProperties<T>, 
 export type HTMLAttributes<T extends HTMLElement> =
     & { [P in keyof ApplicableNonFunctionProperties<T>]?: ApplicableNonFunctionProperties<T>[P] | Observable<ApplicableNonFunctionProperties<T>[P]> | (() => ApplicableNonFunctionProperties<T>[P]); }
     & { [P in keyof AriaAttributes]?: AriaAttributes[P] | Observable<AriaAttributes[P]> | (() => AriaAttributes[P]); }
+    & { role?: string | Observable<string> | (() => string); }
     & { style?: Partial<CSSStyleDeclaration>; } // TODO: Support observables
     & { toggle?: { [name: string]: boolean | Observable<boolean> | (() => boolean); }; }
     & { switch?: Observable<string> | (() => string) | (Observable<string> | (() => string))[]; }

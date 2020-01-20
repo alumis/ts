@@ -1,0 +1,98 @@
+@import "../scss/base";
+
+//
+// Base styles
+//
+
+.btn {
+  display: inline-block;
+  font-weight: $btn-font-weight;
+  line-height: $btn-line-height;
+  color: $body-color;
+  text-align: center;
+  vertical-align: middle;
+  user-select: none;
+  background: transparent;
+  border: $btn-border-width solid transparent;
+  @include button-size($btn-padding-y, $btn-padding-x, $btn-font-size, $btn-border-radius);
+  transition: $btn-transition;
+
+  &:hover {
+    color: $body-color;
+    text-decoration: none;
+  }
+
+  &:focus {
+    outline: 0;
+    box-shadow: $btn-focus-box-shadow;
+  }
+
+  &:active {
+    box-shadow: $btn-active-box-shadow;
+
+    &:focus {
+      box-shadow: $btn-focus-box-shadow, $btn-active-box-shadow;
+    }
+  }
+
+  &:disabled,
+  fieldset:disabled & { // stylelint-disable-line selector-no-qualifying-type
+    pointer-events: none;
+    opacity: $btn-disabled-opacity;
+    box-shadow: none;
+  }
+}
+
+
+//
+// Alternate buttons
+//
+
+.btn-primary {
+  @include button-variant($primary, $primary);
+}
+
+.btn-outline-primary {
+  @include button-outline-variant($primary);
+}
+
+.btn-toolbar {
+
+  box-shadow: elevation(0);
+
+  &:hover {
+    box-shadow: elevation(3);
+  }
+
+  &:focus {
+    box-shadow: elevation(3);
+  }
+
+  &:active {
+
+    box-shadow: $btn-active-box-shadow;
+
+    &:focus {
+      box-shadow: $btn-active-box-shadow;
+    }
+  }
+}
+
+.btn-icon {
+
+  cursor: pointer;
+  vertical-align: baseline;
+}
+
+
+//
+// Button Sizes
+//
+
+.btn-lg {
+  @include button-size($btn-padding-y-lg, $btn-padding-x-lg, $btn-font-size-lg, $btn-border-radius-lg);
+}
+
+.btn-sm {
+  @include button-size($btn-padding-y-sm, $btn-padding-x-sm, $btn-font-size-sm, $btn-border-radius-sm);
+}

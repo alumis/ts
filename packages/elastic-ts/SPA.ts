@@ -38,7 +38,7 @@ export abstract class DirectoryPage<TNode extends Node = Node, TPageNode extends
                     page = await subPageEntry.loadInstanceAsync() as Page<TPageNode>;
                     if (subPageEntry.cache) {
                         subPageEntry.cachedInstance = page;
-                        delete subPageEntry.loadInstanceAsync;
+                        subPageEntry.loadInstanceAsync = null;
                     }
                 }
                 let pageHttpStatusCode: HttpStatusCode;

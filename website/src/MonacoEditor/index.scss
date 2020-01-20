@@ -1,0 +1,92 @@
+@import "../scss/base";
+
+.monaco-editor {
+
+  margin-bottom: $paragraph-margin-bottom;
+
+  .monaco-editor-frame {
+
+    border: 1px solid $border-color;
+    padding-right: 1px;
+
+    .monaco-editor-toolbar {
+
+      background: $gray-200;
+      border-bottom: 1px solid $border-color;
+      padding: .25rem;
+      position: relative;
+
+      &:after {
+        background: $gray-200;
+        bottom: 0;
+        content: "";
+        display: block;
+        position: absolute;
+        right: -1px;
+        top: 0;
+        width: 1px;
+      }
+
+      button {
+
+        padding-left: .75rem;
+        padding-right: .75rem;
+      }
+
+      .monaco-editor-toolbar-btn-play {
+
+        &,
+        &:hover {
+          color: $green;
+        }
+      }
+
+      .monaco-editor-toolbar-btn-stop {
+
+        &,
+        &:hover {
+          color: $red;
+        }
+      }
+
+      .monaco-editor-toolbar-btn-replay {
+
+        &,
+        &:hover {
+          color: $blue;
+        }
+      }
+
+      .monaco-editor-toolbar-progress {
+
+        bottom: (-$progress-height);
+        left: 0;
+        opacity: 0;
+        position: absolute;
+        width: calc(100% + 1px);
+        z-index: 1;
+      }
+    }
+
+    &.monaco-editor-compiling .monaco-editor-toolbar .monaco-editor-toolbar-progress {
+
+      opacity: 1;
+    }
+  }
+
+  .monaco-editor-path {
+
+    display: block;
+    //margin-left: .5rem;
+    margin-top: ($paragraph-margin-bottom / 4);
+    opacity: .5;
+
+    .monaco-editor-path-icon {
+
+      margin-right: (1em/3);
+      position: relative;
+      top: .108em;
+      vertical-align: baseline;
+    }
+  }
+}

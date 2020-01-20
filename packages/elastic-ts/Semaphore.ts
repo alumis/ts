@@ -6,12 +6,12 @@ export class Semaphore {
     constructor() {
         let head = <SemaphoreQueueEntry>{}, tail = <SemaphoreQueueEntry>{};
         (head.next = tail).previous = head;
-        this._head = head;
-        this._tail = tail;
+        this.head = head;
+        this.tail = tail;
     }
 
-    private _head: SemaphoreQueueEntry;
-    private _tail: SemaphoreQueueEntry;
+    head: SemaphoreQueueEntry;
+    tail: SemaphoreQueueEntry;
 
     waitOneAsync(cancellationtoken?: CancellationToken) {
         if (cancellationtoken) {
@@ -19,10 +19,10 @@ export class Semaphore {
                 return Promise.reject(new OperationCancelledError());
         }
         return new Promise<void>((resolve, reject) => {
-            let currentQueueEntry = <SemaphoreQueueEntry>{ resolve: resolve, previous: this._tail.previous, next: this._tail };
+            let currentQueueEntry = <SemaphoreQueueEntry>{ resolve: resolve, previous: this.tail.previous, next: this.tail };
             currentQueueEntry.previous.next = currentQueueEntry;
             currentQueueEntry.next.previous = currentQueueEntry;
-            if (this._head.next === currentQueueEntry)
+            if (this.head.next === currentQueueEntry)
                 resolve();
             else if (cancellationtoken) {
                 currentQueueEntry.cancellationToken = cancellationtoken;
@@ -35,25 +35,25 @@ export class Semaphore {
     }
 
     release() {
-        let head = this._head, next = head.next.next;
+        let head = this.head, next = head.next.next;
         (head.next = next).previous = head;
-        if (next !== this._tail) {
+        if (next !== this.tail) {
             if (next.cancellationToken) {
                 next.cancellationToken.removeListener(next.cancellationTokenListener);
-                delete next.cancellationToken;
-                delete next.cancellationTokenListener;
+                next.cancellationToken = null;
+                next.cancellationTokenListener = null;
             }
             let resolve = next.resolve;
-            delete next.resolve;
+            next.resolve = null;
             resolve();
         }
     }
 }
 
-interface SemaphoreQueueEntry {
-    resolve: () => void;
+export interface SemaphoreQueueEntry {
+    resolve();
     previous: SemaphoreQueueEntry;
     next: SemaphoreQueueEntry;
     cancellationToken: CancellationToken;
-    cancellationTokenListener: () => void;
+    cancellationTokenListener();
 }

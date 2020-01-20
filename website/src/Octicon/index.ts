@@ -2,24 +2,18 @@ import octiconStyles from "./index.scss";
 
 import { bindProperties } from "@alumis/elastic-ts/JSX";
 
-export default function Octicon(properties: OcticonProperties) {
+export function Octicon(properties: OcticonProperties) {
 
-    
-    let icon = properties.icon;
-    let height = properties.size || OcticonSize.Medium;
-
+    let { icon, size, role = "img", ...otherProperties } = properties || {};
+    let height = size || OcticonSize.Medium;
     let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
-    let newProperties = {...properties};
+    if (!("aria-hidden" in otherProperties))
+        otherProperties["aria-hidden"] = "true";
 
-    delete newProperties.icon;
-    delete newProperties.size;
+    bindProperties(svg, otherProperties);
 
-    bindProperties(svg, newProperties);
-    svg.setAttribute("role", "img");
-    
-    if (!("aria-hidden" in newProperties))
-        svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("role", role);
 
     svg.classList.add(octiconStyles.octicon);
 
@@ -39,10 +33,9 @@ export default function Octicon(properties: OcticonProperties) {
     return svg;
 }
 
-export interface OcticonProperties {
-    icon: OcticonData;
-    size?: OcticonSize;
-}
+export type OcticonProperties =
+  & JSX.SVGAttributes<SVGSVGElement>
+  & { icon: OcticonData; size?: OcticonSize; role?: string; };
 
 export enum OcticonSize {
 

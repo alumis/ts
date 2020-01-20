@@ -4,7 +4,7 @@ declare namespace JSX {
 
         // List
         
-        numbered?: boolean;
+        "list-style-type"?: import("../list-style-type").ListStyleType;
 
         // Grid
 

@@ -1,8 +1,7 @@
 {
-  "name": "playground",
+  "name": "website",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Elastic website",
   "scripts": {
     "clean": "node ./node_modules/rimraf/bin.js ./dist",
     "start:dev": "npm run clean && node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.config.dev.js --history-api-fallback",
@@ -25,7 +24,6 @@
     "@babel/preset-typescript": "7.7.4",
     "autoprefixer": "^9.7.3",
     "babel-loader": "^8.0.6",
-    "babel-plugin-ts-optchain": "^1.1.5",
     "copy-webpack-plugin": "^5.1.1",
     "core-js": "^3.5.0",
     "css-loader": "3.3.2",
@@ -49,7 +47,8 @@
     "webpack": "4.41.2",
     "webpack-bundle-analyzer": "^3.6.0",
     "webpack-cli": "3.3.10",
-    "workbox-webpack-plugin": "^5.0.0-beta.0"
+    "workbox-webpack-plugin": "^5.0.0-beta.0",
+    "worker-loader": "^2.0.0"
   },
   "devDependencies": {
     "@teamsupercell/typings-for-css-modules-loader": "^2.1.0",

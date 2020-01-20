@@ -1,0 +1,20 @@
+$animation-deceleration-curve-timing-function: cubic-bezier(0, 0, .2, 1);
+$animation-standard-curve-timing-function: cubic-bezier(.4, 0, .2, 1);
+$animation-acceleration-curve-timing-function: cubic-bezier(.4, 0, 1, 1);
+$animation-sharp-curve-timing-function: cubic-bezier(.4, 0, .6, 1);
+
+@function animation-enter($name, $duration, $delay: 0ms) {
+  @return $name $duration $delay $animation-deceleration-curve-timing-function;
+}
+
+@function animation-exit-permanent($name, $duration, $delay: 0ms) {
+  @return $name $duration $delay $animation-acceleration-curve-timing-function;
+}
+
+@function animation-exit-temporary($name, $duration, $delay: 0ms) {
+  @return $name $duration $delay $animation-sharp-curve-timing-function;
+}
+
+@function animation-standard($name, $duration, $delay: 0ms) {
+  @return $name $duration $delay $animation-standard-curve-timing-function;
+}

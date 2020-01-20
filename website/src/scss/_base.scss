@@ -16,8 +16,16 @@
 @import "./rfs";
 @import "./breakpoints";
 @import "./elevation";
+@import "./animation";
 
 @import "../grid/variables";
 @import "../grid/mixins";
+
+@import "../Button/variables";
+@import "../Button/mixins";
+
+@import "../Progress/variables";
+
+@import "../Snackbar/variables";
 
 @import "../MainHeader/variables";

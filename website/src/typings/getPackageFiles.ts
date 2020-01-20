@@ -1,0 +1,1 @@
+declare function getPackageFiles(): { [filePath: string]: string;  };

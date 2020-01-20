@@ -1,0 +1,32 @@
+.list-style-type-decimal {
+
+    list-style-type: decimal;
+    padding-left: 30px;
+
+    > li {
+        
+        display: list-item;
+    }
+}
+
+.list-style-type-disc {
+
+    list-style-type: disc;
+    padding-left: 30px;
+
+    > li {
+        
+        display: list-item;
+    }
+}
+
+.list-style-type-upper-roman {
+
+    list-style-type: upper-roman;
+    padding-left: 30px;
+
+    > li {
+        
+        display: list-item;
+    }
+}
