@@ -3,13 +3,14 @@ import "./index.scss";
 import { SPA as SPA, HttpStatusCode, Page, PageDirection } from "@alumis/elastic-ts/SPA";
 import { Managed } from "@alumis/elastic-ts/JSX";
 import { o } from "@alumis/elastic-ts/ModifiableObservable";
+import { TUTORIAL_PAGE_RELATIVE_PATH as TUTORIAL_PAGE_RELATIVE_PATH } from "../TutorialPage/metadata";
 
 export class ElasticWebsite extends SPA<HTMLBodyElement, Node> {
 
     constructor() {
         super();
         this.installTitleHandler();
-        this.registerSubPage(["tutorial"], async () => { return new (await import("../TutorialPage")).TutorialPage(); });
+        this.registerSubPage([TUTORIAL_PAGE_RELATIVE_PATH], async () => { return new (await import("../TutorialPage")).TutorialPage(); });
         this.node = <>{() => <Managed>{this.currentPage.value}</Managed>}</>;
     }
 
@@ -25,7 +26,7 @@ export class ElasticWebsite extends SPA<HTMLBodyElement, Node> {
         return "Elastic";
     }
 
-    async loadAsync(parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent, page?: Page<Node>, pageHttpStatusCode?: HttpStatusCode) {
+    async loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent, page?: Page<Node>, pageHttpStatusCode?: HttpStatusCode) {
         this.currentPage.value = page;
         return HttpStatusCode.Ok;
     }

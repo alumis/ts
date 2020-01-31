@@ -46,6 +46,7 @@ export class MonacoEditor extends Component<HTMLDivElement> {
 
     this.node = (
       <div {...otherProperties}>
+        {showPath ? <small className={monacoEditorStyles.monacoEditorPath}>{octicon}{simplifyPath(model.uri.path)}</small> : null}
         <div toggle={{ [monacoEditorStyles.monacoEditorFrame]: true, [monacoEditorStyles.monacoEditorCompiling]: this._isCompiling }}>
           {!readOnly ?
             <fieldset className={monacoEditorStyles.monacoEditorToolbar} role="toolbar" disabled={this._isCompiling}>
@@ -62,7 +63,6 @@ export class MonacoEditor extends Component<HTMLDivElement> {
             : null}
           {domElement = <div style={{ height: (rows + 2) * LINE_HEIGHT + "px" }}></div>}
         </div>
-        {showPath ? <small className={monacoEditorStyles.monacoEditorPath}>{octicon}{model.uri.path}</small> : null}
       </div>
     );
 
@@ -168,6 +168,16 @@ export class MonacoEditor extends Component<HTMLDivElement> {
     this._isCompiling.dispose();
     this._codeRunner.dispose();
   }
+}
+
+function simplifyPath(path: string) {
+  if (path.startsWith("/node_modules/"))
+    path = path.substr("/node_modules/".length);
+
+  if (path.endsWith(".ts"))
+    path = path.substr(0, path.length - 3);
+
+  return path;
 }
 
 export type MonacoEditorProperties = JSX.HTMLAttributes<HTMLDivElement> & {

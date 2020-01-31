@@ -1,7 +1,7 @@
-import { bootstrap } from "@alumis/elastic-ts/JSX";
+import { bootstrapJSX } from "@alumis/elastic-ts/JSX";
 import { ElasticWebsite } from "./ElasticWebsite";
 
-bootstrap();
+bootstrapJSX();
 
 import "./grid";
 

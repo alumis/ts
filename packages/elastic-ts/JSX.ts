@@ -4,7 +4,7 @@ import { ModifiableObservable } from "./ModifiableObservable";
 import { isObservable } from "./isObservable";
 import { ObservableList, ObservableListModificationType } from "./ObservableList";
 
-export function bootstrap() {
+export function bootstrapJSX() {
     // @ts-ignore
     self.createNode = createNode;
 }
@@ -96,7 +96,7 @@ function appendObservableChild(parentNode: Node, observable: Observable<any>, ow
         head.parentNode.insertBefore(documentFragment, tail);
     });
 
-    appendDisposeCallbackToNode(tail, ownsObservable ? observable.dispose : subscription.unsubscribeAndRecycle);
+    appendDisposeCallbackToNode(tail, ownsObservable ? observable.dispose : subscription.dispose);
 }
 
 const DISPOSE_CALLBACKS_KEY = "__disposeCallbacks";
@@ -221,7 +221,7 @@ export function bindProperty(element: Element, name: string, expression: any | O
     if (name.indexOf("-") !== -1) {
         if (isObservable(expression)) {
             let subscription = (expression as Observable<any>).subscribeInvoke(n => { element.setAttribute(name, n); });
-            appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+            appendDisposeCallbackToNode(element, subscription.dispose);
         }
         else if (typeof expression === "function") {
             let computedObservable = co(expression);
@@ -237,7 +237,7 @@ export function bindProperty(element: Element, name: string, expression: any | O
 
             let subscription = (expression as Observable<any>).subscribeInvoke(n => { element[name] = n; });
 
-            appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+            appendDisposeCallbackToNode(element, subscription.dispose);
 
             if (expression instanceof ModifiableObservable) {
 
@@ -275,7 +275,7 @@ globalPropertyHandlers.set("style", (element: HTMLElement, value: Partial<CSSSty
 globalPropertyHandlers.set("role", (element: HTMLElement, value: string | Observable<string> | (() => string)) => {
     if (isObservable(value)) {
         let subscription = (value as Observable<any>).subscribeInvoke(n => { element.setAttribute("role", n); });
-        appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+        appendDisposeCallbackToNode(element, subscription.dispose);
     }
     else if (typeof value === "function") {
         let computedObservable = co(value);
@@ -290,7 +290,7 @@ export function toggleClass(element: HTMLElement, value: { [name: string]: boole
         let expression = value[p] as boolean | Observable<boolean> | (() => boolean);
         if (isObservable(expression)) {
             let subscription = (function (p) { return (expression as Observable<any>).subscribeInvoke(n => { element.classList.toggle(p, n); }); })(p);
-            appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+            appendDisposeCallbackToNode(element, subscription.dispose);
         }
         else if (typeof expression === "function") {
             let computedObservable = co(expression);
@@ -306,7 +306,7 @@ globalPropertyHandlers.set("toggle", toggleClass);
 export function switchClass(element: HTMLElement, value: Observable<string> | (() => string) | (Observable<string> | (() => string))[]) {
     if (isObservable(value)) {
         let subscription = (value as Observable<string>).subscribeInvoke(n => { element.className = n; });
-        appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+        appendDisposeCallbackToNode(element, subscription.dispose);
     }
     else if (typeof value === "function") {
         let computedObservable = co(value);
@@ -322,7 +322,7 @@ export function switchClass(element: HTMLElement, value: Observable<string> | ((
                     if (o) element.classList.remove(o);
                     if (n) element.classList.add(n);
                 });
-                appendDisposeCallbackToNode(element, subscription.unsubscribeAndRecycle);
+                appendDisposeCallbackToNode(element, subscription.dispose);
             }
             else {
                 let computedObservable = co(i as () => string);

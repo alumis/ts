@@ -3,7 +3,7 @@ import { Semaphore } from "./Semaphore";
 import { Component } from "./JSX";
 
 export abstract class Page<TNode extends Node = Node> extends Component<TNode> {
-    abstract loadAsync(parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent): Promise<HttpStatusCode>;
+    abstract loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent): Promise<HttpStatusCode>;
     abstract get title(): string;
 }
 
@@ -13,7 +13,7 @@ export enum PageDirection {
     Backward
 }
 
-export abstract class DirectoryPage<TNode extends Node = Node, TPageNode extends Node = Node> extends Page<TPageNode> {
+export abstract class DirectoryPage<TNode extends Node = Node, TPageNode extends Node = Node> extends Page<TNode> {
 
     private _aliases = new Map<string, string>();
     private _subPages = new Map<string, { loadInstanceAsync(): Promise<Page<Node>>; cache: boolean; cachedInstance?: Page<Node>; }>();
@@ -24,11 +24,11 @@ export abstract class DirectoryPage<TNode extends Node = Node, TPageNode extends
             this._aliases.set(paths[i], paths[0]);
     }
 
-    async loadPathAsync(path: string[], parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent) {
-        if (0 < path.length) {
-            let subPageEntry = this._subPages.get(path[0]);
+    async loadSubPageAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent) {
+        if (pathIndex < path.length) {
+            let subPageEntry = this._subPages.get(path[pathIndex]);
             if (!subPageEntry) {
-                let alias = this._aliases.get(path[0]);
+                let alias = this._aliases.get(path[pathIndex]);
                 if (alias)
                     subPageEntry = this._subPages.get(alias);
             }
@@ -43,15 +43,15 @@ export abstract class DirectoryPage<TNode extends Node = Node, TPageNode extends
                 }
                 let pageHttpStatusCode: HttpStatusCode;
                 if (page instanceof DirectoryPage)
-                    pageHttpStatusCode = await page.loadPathAsync(path.slice(1), parameters, pageDirection, e);
-                else pageHttpStatusCode = await page.loadAsync(parameters, pageDirection, e);
-                return await this.loadAsync(parameters, pageDirection, e, page, pageHttpStatusCode);
+                    pageHttpStatusCode = await page.loadSubPageAsync(path, pathIndex + 1, parameters, pageDirection, e);
+                else pageHttpStatusCode = await page.loadAsync(path, pathIndex + 1, parameters, pageDirection, e);
+                return await this.loadAsync(path, pathIndex, parameters, pageDirection, e, page, pageHttpStatusCode);
             }
         }
-        return await this.loadAsync(parameters, pageDirection, e);
+        return await this.loadAsync(path, pathIndex, parameters, pageDirection, e);
     }
 
-    abstract loadAsync(parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent, page?: Page<TPageNode>, pageHttpStatusCode?: HttpStatusCode): Promise<HttpStatusCode>;
+    abstract loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent, page?: Page<TPageNode>, pageHttpStatusCode?: HttpStatusCode): Promise<HttpStatusCode>;
 }
 
 export enum HttpStatusCode {
@@ -124,7 +124,7 @@ export abstract class SPA<TNode extends Node, TPageNode extends Node> extends Di
         else pageDirection = PageDirection.None;
         let locationComponents = getLocationComponents(location.pathname, location.search);
         await this.loadLocationSemaphore.waitOneAsync();
-        try { await this.loadPathAsync(locationComponents.path, locationComponents.parameters, pageDirection, e); }
+        try { await this.loadSubPageAsync(locationComponents.path, 0, locationComponents.parameters, pageDirection, e); }
         finally { this.loadLocationSemaphore.release(); }
     }
 
@@ -140,4 +140,12 @@ function getLocationComponents(pathName: string, search: string) {
     if (pathName.startsWith("/"))
         pathName = pathName.substr(1);
     return { path: pathName ? pathName.split("/").map(p => decodeURIComponent(p)) : [], parameters: new URLSearchParams(search) };
+}
+
+export function combinePath(path: string[], ...subPath: string[]) {
+
+    if (0 < path.length)
+        return "/" + path.join("/") + "/" + subPath.join("/");
+
+    return "/" + subPath.join("/");
 }
