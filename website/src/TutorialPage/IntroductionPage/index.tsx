@@ -31,7 +31,7 @@ export class IntroductionPage extends Page<HTMLDivElement> {
           <p>In order to start using Alumis, you first need to set up a working environment. Follow the instructions below to download a pre-configured template that, among other things, uses Webpack and Babel to compile JavaScript.</p>
           <ol list-style-type={ListStyleType.Decimal}>
             <li>Make sure Node.js is installed</li>
-            <li>Run <ShellCommand>npx @alumis/create ./new-project-folder-name</ShellCommand></li>
+            <li>Run <ShellCommand>npx @alumis/ts-create ./new-project-folder-name</ShellCommand></li>
           </ol>
           <p>
             The template includes a small Single Page Application.
