@@ -1,4 +1,4 @@
-import { Page, PageDirection, HttpStatusCode } from "@alumis/elastic-ts/SPA";
+import { Page, PageDirection, HttpStatusCode } from "@alumis/ts/SPA";
 
 import { ExternalLink } from "../../ExternalLink";
 import { MonacoEditor } from "../../MonacoEditor";
@@ -21,17 +21,17 @@ export class IntroductionPage extends Page<HTMLDivElement> {
         <div>
           <h1>{INTRODUCTION_PAGE_TITLE}</h1>
           <p>
-            Elastic.js is a TypeScript front-end web framework that combines JSX with an observer pattern to generate and update DOM elements.
+            Alumis is a TypeScript front-end web framework that combines JSX with an observer pattern to generate and update DOM elements.
             JSX is an extension to the JavaScript language that allows embedding XML/HTML-like text, which greatly simplifies the dynamic generation of user interfaces.
           </p>
           <p>
             Only the TypeScript files are packaged (npm), and the developer must perform the compilation him or herself using e.g. Webpack or Parcel + Babel.
           </p>
           <h2 id={INTRODUCTION_PAGE_SETUP_ID}>{INTRODUCTION_PAGE_SETUP_TITLE}</h2>
-          <p>In order to start using Elastic.js, you first need to set up a working environment. Follow the instructions below to download a pre-configured template that, among other things, uses Webpack and Babel to compile JavaScript.</p>
+          <p>In order to start using Alumis, you first need to set up a working environment. Follow the instructions below to download a pre-configured template that, among other things, uses Webpack and Babel to compile JavaScript.</p>
           <ol list-style-type={ListStyleType.Decimal}>
             <li>Make sure Node.js is installed</li>
-            <li>Run <ShellCommand>npx @alumis/create-elastic-app ./new-project-folder-name</ShellCommand></li>
+            <li>Run <ShellCommand>npx @alumis/create ./new-project-folder-name</ShellCommand></li>
           </ol>
           <p>
             The template includes a small Single Page Application.
@@ -53,8 +53,8 @@ export class IntroductionPage extends Page<HTMLDivElement> {
   }
 }
 
-let exampleModel = monaco.editor.createModel(`import { bootstrapJSX } from "@alumis/elastic-ts/JSX";
-import { o } from "@alumis/elastic-ts/ModifiableObservable";
+let exampleModel = monaco.editor.createModel(`import { bootstrapJSX } from "@alumis/ts/JSX";
+import { o } from "@alumis/ts/ModifiableObservable";
 
 bootstrapJSX(); // When using JSX, you need to call this function at the beginning of your app
 

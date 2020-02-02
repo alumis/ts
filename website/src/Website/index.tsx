@@ -1,11 +1,11 @@
 import "./index.scss";
 
-import { SPA as SPA, HttpStatusCode, Page, PageDirection } from "@alumis/elastic-ts/SPA";
-import { Managed } from "@alumis/elastic-ts/JSX";
-import { o } from "@alumis/elastic-ts/ModifiableObservable";
+import { SPA as SPA, HttpStatusCode, Page, PageDirection } from "@alumis/ts/SPA";
+import { Managed } from "@alumis/ts/JSX";
+import { o } from "@alumis/ts/ModifiableObservable";
 import { TUTORIAL_PAGE_RELATIVE_PATH as TUTORIAL_PAGE_RELATIVE_PATH } from "../TutorialPage/metadata";
 
-export class ElasticWebsite extends SPA<HTMLBodyElement, Node> {
+export class Website extends SPA<HTMLBodyElement, Node> {
 
     constructor() {
         super();
@@ -21,9 +21,9 @@ export class ElasticWebsite extends SPA<HTMLBodyElement, Node> {
         let currentPage = this.currentPage.value;
 
         if (currentPage)
-            return "Elastic - " + currentPage.title;
+            return "Alumis - " + currentPage.title;
 
-        return "Elastic";
+        return "Alumis";
     }
 
     async loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent, page?: Page<Node>, pageHttpStatusCode?: HttpStatusCode) {

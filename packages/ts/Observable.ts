@@ -11,11 +11,13 @@ export interface Observable<T> {
    * @param callback A function that gets called when the value changes
    */
   subscribe(callback: (newValue: T, oldValue: T) => any): ObservableSubscription<(newValue: T, oldValue: T) => any>;
+  subscribeSneakInLine(callback: (newValue: T, oldValue: T) => any): ObservableSubscription<(newValue: T, oldValue: T) => any>;
   /**
    * Same as subscribe(), but invokes the callback immediately upon invocation.
    * @param callback A function that gets called when the value changes
    */
   subscribeInvoke(callback: (newValue: T, oldValue: T) => any): ObservableSubscription<(newValue: T, oldValue: T) => any>;
+  subscribeInvokeSneakInLine(callback: (newValue: T, oldValue: T) => any): ObservableSubscription<(newValue: T, oldValue: T) => any>;
   /** Forces all subscribers to get notified that the value changed. */
   invalidate(): void;
   /** Disposes the observable along with all subscriptions associated with it. */

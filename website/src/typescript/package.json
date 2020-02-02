@@ -21,7 +21,7 @@
   "_resolved": "https://registry.npmjs.org/typescript/-/typescript-3.7.4.tgz",
   "_shasum": "1743a5ec5fef6a1fa9f3e4708e33c81c73876c19",
   "_spec": "typescript@^3.7.4",
-  "_where": "/home/emil/Alumis/git/elastic/website",
+  "_where": "/home/emil/Alumis/git/ts/website",
   "author": {
     "name": "Microsoft Corp."
   },

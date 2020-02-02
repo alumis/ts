@@ -78,9 +78,9 @@ export class ObservableSubscription<T> {
      * @internal
      */
     recycle() {
-        this.callback = null;
-        this.previous = null;
-        this.next = null;
+        this.callback = undefined;
+        this.previous = undefined;
+        this.next = undefined;
         if (bin.length === binLength)
             bin.push(this);
         else bin[binLength] = this;
@@ -94,6 +94,8 @@ export class ObservableSubscription<T> {
      */
     dispose() {
         (this.previous.next = this.next).previous = this.previous;
+        this.previous = undefined;
+        this.next = undefined;
         this.recycle();
     };
 }

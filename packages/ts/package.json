@@ -1,11 +1,11 @@
 {
-  "name": "@alumis/elastic-ts",
+  "name": "@alumis/ts",
   "version": "1.0.0",
   "description": "A TypeScript front-end web framework that combines JSX together with an observer pattern to build user interfaces",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alumis/elastic.git",
-    "directory": "packages/elastic-ts"
+    "url": "git+https://github.com/alumis/ts.git",
+    "directory": "packages/ts-ts"
   },
   "keywords": [
     "elastic"
@@ -13,9 +13,9 @@
   "author": "Emil Muller",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/alumis/elastic/issues"
+    "url": "https://github.com/alumis/ts/issues"
   },
-  "homepage": "https://github.com/alumis/elastic#readme",
+  "homepage": "https://github.com/alumis/ts#readme",
   "devDependencies": {
     "core-js": "^3.5.0"
   }

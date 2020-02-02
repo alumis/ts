@@ -1,9 +1,9 @@
-import { Page, PageDirection, HttpStatusCode } from "@alumis/elastic-ts/SPA";
+import { Page, PageDirection, HttpStatusCode } from "@alumis/ts/SPA";
 import { MonacoEditor } from "../../MonacoEditor";
 
 import * as monaco from "monaco-editor";
 import "../../monaco";
-import { Observable } from "@alumis/elastic-ts/Observable";
+import { Observable } from "@alumis/ts/Observable";
 import { ExternalLink } from "../../ExternalLink";
 import { INTRODUCTION_TO_JSX_PLUS_OBSERVABLES_PAGE_TITLE } from "./metadata";
 import { Callout } from "../../Callout";
@@ -25,8 +25,8 @@ export class IntroductionToJSXPlusObservablesPage extends Page<HTMLDivElement> {
           </p>
           <Callout>
             <h5>Coming from React?</h5>
-            The JSX attribute naming convention in Elastic.js is different from React's naming convention.
-            In Elastic.js, attribute names directly correspond with the Node's property names. For example, to subscribe to the <ExternalLink href="https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onclick">click event</ExternalLink>, the attribute name is <em>onclick</em> and not <em>onClick</em>.
+            The JSX attribute naming convention in Alumis is different from React's naming convention.
+            In Alumis, attribute names directly correspond with the Node's property names. For example, to subscribe to the <ExternalLink href="https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onclick">click event</ExternalLink>, the attribute name is <em>onclick</em> and not <em>onClick</em>.
           </Callout>
           <h2>Binding to attributes</h2>
           <p>In addition to binding to content, attributes can be bound as well:</p>
@@ -41,8 +41,8 @@ export class IntroductionToJSXPlusObservablesPage extends Page<HTMLDivElement> {
   }
 }
 
-let bindingToAttributesExampleModel = monaco.editor.createModel(`import { bootstrapJSX } from "@alumis/elastic-ts/JSX";
-import { o } from "@alumis/elastic-ts/ModifiableObservable";
+let bindingToAttributesExampleModel = monaco.editor.createModel(`import { bootstrapJSX } from "@alumis/ts/JSX";
+import { o } from "@alumis/ts/ModifiableObservable";
 
 bootstrapJSX(); // When using JSX, you need to call this function at the beginning of your app
 

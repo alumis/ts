@@ -1,5 +1,5 @@
 import buttonStyles from "./index.scss";
-import { createNode } from "@alumis/elastic-ts/JSX";
+import { createNode } from "@alumis/ts/JSX";
 
 export function Button(properties: ButtonProperties, children: any[]) {
 

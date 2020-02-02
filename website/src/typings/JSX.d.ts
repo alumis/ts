@@ -20,8 +20,8 @@ declare namespace JSX {
         row?: boolean;
     }
 
-    type HTMLAttributes<THTMLElement extends HTMLElement> = import("@alumis/elastic-ts/JSX").HTMLAttributes<THTMLElement> & AdditionalAttributes;
-    type SVGAttributes<TSVGElement extends SVGElement> = import("@alumis/elastic-ts/JSX").SVGAttributes<TSVGElement>;
+    type HTMLAttributes<THTMLElement extends HTMLElement> = import("@alumis/ts/JSX").HTMLAttributes<THTMLElement> & AdditionalAttributes;
+    type SVGAttributes<TSVGElement extends SVGElement> = import("@alumis/ts/JSX").SVGAttributes<TSVGElement>;
 
     interface IntrinsicElements {
 

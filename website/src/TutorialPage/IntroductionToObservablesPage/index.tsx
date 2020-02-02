@@ -1,9 +1,9 @@
-import { Page, PageDirection, HttpStatusCode } from "@alumis/elastic-ts/SPA";
+import { Page, PageDirection, HttpStatusCode } from "@alumis/ts/SPA";
 import { MonacoEditor } from "../../MonacoEditor";
 
 import * as monaco from "monaco-editor";
 import "../../monaco";
-import { Observable } from "@alumis/elastic-ts/Observable";
+import { Observable } from "@alumis/ts/Observable";
 import { ExternalLink } from "../../ExternalLink";
 import { INTRODUCTION_TO_OBSERVABLES_PAGE_TITLE, INTRODUCTION_TO_OBSERVABLES_PAGE_OBSERVABLE_INTERFACE_ID, INTRODUCTION_TO_OBSERVABLES_PAGE_OBSERVABLE_INTERFACE_TITLE, INTRODUCTION_TO_OBSERVABLES_PAGE_MODIFIABLE_OBSERVABLES_ID, INTRODUCTION_TO_OBSERVABLES_PAGE_MODIFIABLE_OBSERVABLES_TITLE, INTRODUCTION_TO_OBSERVABLES_PAGE_COMPUTED_OBSERVABLES_ID, INTRODUCTION_TO_OBSERVABLES_PAGE_COMPUTED_OBSERVABLES_TITLE, INTRODUCTION_TO_OBSERVABLES_PAGE_WHENASYNC_ID, INTRODUCTION_TO_OBSERVABLES_PAGE_WHENASYNC_TITLE } from "./metadata";
 
@@ -19,7 +19,7 @@ export class IntroductionToObservablesPage extends Page<HTMLDivElement> {
       this.node = (
         <div>
           <h1>{INTRODUCTION_TO_OBSERVABLES_PAGE_TITLE}</h1>
-          <p>An observable is an object which holds a value. Observers can subscribe to an observable to get notified when its value changes, and react accordingly — e.g. by updating the DOM. When using Elastic.js' JSX notation, observables written within curly brackets ({"{}"}) are automatically subscribed to, and the logic to update the DOM is automatically implemented.</p>
+          <p>An observable is an object which holds a value. Observers can subscribe to an observable to get notified when its value changes, and react accordingly — e.g. by updating the DOM. When using Alumis' JSX notation, observables written within curly brackets ({"{}"}) are automatically subscribed to, and the logic to update the DOM is automatically implemented.</p>
           <p>
             A particularly useful concept within the observable realm is the <em>computed observable</em> which value is the result of evaluating an expression which in turn depends on other observables.
             By changing the underlying observables within a computed observable's expression, the computed observable will re-evaluate itself and notify its subscribers if its value turns out to have changed.
@@ -51,9 +51,9 @@ export class IntroductionToObservablesPage extends Page<HTMLDivElement> {
   }
 }
 
-let observableModel = monaco.editor.getModel(monaco.Uri.parse("file:///node_modules/@alumis/elastic-ts/Observable.ts"));
+let observableModel = monaco.editor.getModel(monaco.Uri.parse("file:///node_modules/@alumis/ts/Observable.ts"));
 
-let example1Model = monaco.editor.createModel(`import { o } from "@alumis/elastic-ts/ModifiableObservable";
+let example1Model = monaco.editor.createModel(`import { o } from "@alumis/ts/ModifiableObservable";
 
 // Creates a ModifiableObservable<string>.
 // Never call the constructor of ModifiableObservable<string>.
@@ -70,8 +70,8 @@ surname.value = "Bertington"; // Triggers the subscription callback
 // Disposes surname along with all the subscriptions associated with it
 surname.dispose();`, "typescript", monaco.Uri.parse(`file:///TutorialPage/ObservablesPage/example1.tsx`));
 
-let example2Model = monaco.editor.createModel(`import { o } from "@alumis/elastic-ts/ModifiableObservable";
-import { co } from "@alumis/elastic-ts/ComputedObservable";
+let example2Model = monaco.editor.createModel(`import { o } from "@alumis/ts/ModifiableObservable";
+import { co } from "@alumis/ts/ComputedObservable";
 
 let givenName = o("todo"), surname = o("todo");
 
@@ -102,8 +102,8 @@ fullName.dispose();
 givenName.dispose();
 surname.dispose();`, "typescript", monaco.Uri.parse(`file:///TutorialPage/ObservablesPage/example2.tsx`));
 
-let example3Model = monaco.editor.createModel(`import { o } from "@alumis/elastic-ts/ModifiableObservable";
-import { whenAsync } from "@alumis/elastic-ts/whenAsync";
+let example3Model = monaco.editor.createModel(`import { o } from "@alumis/ts/ModifiableObservable";
+import { whenAsync } from "@alumis/ts/whenAsync";
 
 let a = o(0), b = o(0);
 

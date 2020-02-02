@@ -1,5 +1,5 @@
 import gridStyles from "./index.scss";
-import { globalPropertyHandlers } from "@alumis/elastic-ts/JSX";
+import { globalPropertyHandlers } from "@alumis/ts/JSX";
 
 export function decomposeDeviceWidth(width: number) {
 

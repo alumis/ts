@@ -3,14 +3,14 @@ import monacoEditorStyles from "./index.scss";
 import * as monaco from "monaco-editor";
 import "../monaco";
 
-import { Component, toggleClass } from "@alumis/elastic-ts/JSX";
+import { Component, toggleClass } from "@alumis/ts/JSX";
 import { CodeRunner } from "../compiler/compiler";
 import { ButtonGroup } from "../ButtonGroup";
 import { Button, ButtonTheme, ButtonSize } from "../Button";
 import { Octicon, OcticonSize } from "../Octicon";
 import TriangleRight from "../Octicons/TriangleRight";
 import PrimitiveSquare from "../Octicons/PrimitiveSquare";
-import { o } from "@alumis/elastic-ts/ModifiableObservable";
+import { o } from "@alumis/ts/ModifiableObservable";
 import { Progress } from "../Progress";
 import File from "../Octicons/File";
 
@@ -86,7 +86,7 @@ export class MonacoEditor extends Component<HTMLDivElement> {
 
         contextmenu: false,
         fontFamily: "IBM Plex Mono",
-        theme: "elasticTheme",
+        theme: "alumisTheme",
 
         readOnly: readOnly
       });

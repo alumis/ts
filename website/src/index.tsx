@@ -1,9 +1,10 @@
-import { bootstrapJSX } from "@alumis/elastic-ts/JSX";
-import { ElasticWebsite } from "./ElasticWebsite";
+import { bootstrapJSX, normalize } from "@alumis/ts/JSX";
+import { Website } from "./Website";
 
 bootstrapJSX();
 
 import "./grid";
+import { o } from "@alumis/ts/ModifiableObservable";
 
 // @ts-ignore
 self.MonacoEnvironment = {
@@ -24,13 +25,35 @@ self.MonacoEnvironment = {
     }
 };
 
-let spa = new ElasticWebsite();
+let spa = new Website();
 
 spa.invalidateLocationAsync();
 document.body.appendChild(spa.node);
 
-// setTimeout(() => {
-    
-//     (<Snack>Hello, world!</Snack>).show();
-    
-// }, 1000);
+
+
+
+// (() => {
+
+//     let givenName = o("todo"); // Creates a ModifiableObservable<string>
+//     let test = o(0);
+
+//     document.body.appendChild(
+//         <p>givenName is {givenName} and
+//             it is {() => givenName.value.length} characters long.
+//             {normalize(() => test.value < 10, (b) => {
+//                 console.log("genererer...");
+//                 console.log(b.value);
+//                 return b.value ? <span>mindre enn 10</span> : <span>ti eller høyere {test}</span>;
+//             })}
+//         </p>
+//     );
+
+//     for (let i = 0; i < 15; ++i)
+//         test.value = i;
+
+//     console.log(test.value)
+
+//     givenName.value = "ljkdfjhsdfdfsdsf";
+
+// })();

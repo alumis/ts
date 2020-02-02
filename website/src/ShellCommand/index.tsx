@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "@alumis/elastic-ts/JSX";
+import { HTMLAttributes } from "@alumis/ts/JSX";
 import Clippy from "../Octicons/Clippy";
 import { Snack } from "../Snackbar";
 import { OcticonButton } from "../OcticonButton";

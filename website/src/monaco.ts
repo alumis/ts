@@ -1,5 +1,5 @@
 import * as monaco from "monaco-editor";
-import { getThemeColors } from "./ElasticWebsite";
+import { getThemeColors } from "./Website";
 import { packageFiles } from "./packageFiles";
 // import { compile } from "./compile";
 
@@ -16,8 +16,8 @@ monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
 for (let p in packageFiles) {
 
   switch (p) {
-    case "/node_modules/@alumis/elastic-ts/Observable.ts":
-    case "/node_modules/@alumis/elastic-ts/ObservableSubscription.ts":
+    case "/node_modules/@alumis/ts/Observable.ts":
+    case "/node_modules/@alumis/ts/ObservableSubscription.ts":
       monaco.editor.createModel(packageFiles[p], "typescript", monaco.Uri.parse("file://" + p));
       break;
   }
@@ -57,7 +57,7 @@ function getHexColorNotRgb(color: string) {
   return color;
 }
 
-monaco.editor.defineTheme("elasticTheme", {
+monaco.editor.defineTheme("alumisTheme", {
   base: "vs",
   inherit: true,
   rules: [

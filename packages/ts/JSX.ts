@@ -1,5 +1,5 @@
 import { Observable } from "./Observable";
-import { co } from "./ComputedObservable";
+import { co, ComputedObservable } from "./ComputedObservable";
 import { ModifiableObservable } from "./ModifiableObservable";
 import { isObservable } from "./isObservable";
 import { ObservableList, ObservableListModificationType } from "./ObservableList";
@@ -49,9 +49,9 @@ function appendChild(parentNode: Node, child) {
     else if (child instanceof HTMLElement || child instanceof SVGElement || child instanceof Comment || child instanceof DocumentFragment)
         parentNode.appendChild(child);
     else if (isObservable(child))
-        appendObservableChild(parentNode, child, false);
+        appendObservableChild(parentNode, child);
     else if (typeof child === "function")
-        appendObservableChild(parentNode, co(child), true);
+        appendObservableChild(parentNode, co(child), child);
     else if (child instanceof ObservableList)
         appendObservableListChild(parentNode, child);
     else if (child instanceof Array)
@@ -61,18 +61,18 @@ function appendChild(parentNode: Node, child) {
         parentNode.appendChild(document.createTextNode(child));
 }
 
-function appendObservableChild(parentNode: Node, observable: Observable<any>, ownsObservable: boolean) {
+function appendObservableChild(parentNode: Node, observable: Observable<any>, observableExpression?: () => any) {
 
     // TODO: Reuse text node
 
-    let value = observable.value, head = document.createComment(" Elastic: head "), documentFragment = document.createDocumentFragment(), tail = document.createComment(" Elastic: tail ");
+    let value = observable.peek(), head = document.createComment(" Elastic: head "), documentFragment = document.createDocumentFragment(), tail = document.createComment(" Elastic: tail ");
 
     documentFragment.appendChild(head);
     appendChild(documentFragment, value);
     documentFragment.appendChild(tail);
     parentNode.appendChild(documentFragment);
 
-    let subscription = observable.subscribe(n => {
+    let subscription = observable.subscribeSneakInLine(n => {
         appendChild(documentFragment, n);
         for (let child = head.nextSibling; child !== tail;) {
             let lastManagedChild: ChildNode = child[LAST_MANAGED_CHILD_KEY];
@@ -96,7 +96,15 @@ function appendObservableChild(parentNode: Node, observable: Observable<any>, ow
         head.parentNode.insertBefore(documentFragment, tail);
     });
 
-    appendDisposeCallbackToNode(tail, ownsObservable ? observable.dispose : subscription.dispose);
+    if (observableExpression) {
+
+        if ((observableExpression as unknown as NormalizedFunction).dispose)
+            appendDisposeCallbackToNode(tail, (observableExpression as unknown as NormalizedFunction).dispose);
+
+        appendDisposeCallbackToNode(tail, observable.dispose);
+    }
+
+    else appendDisposeCallbackToNode(tail, subscription.dispose);
 }
 
 const DISPOSE_CALLBACKS_KEY = "__disposeCallbacks";
@@ -144,7 +152,7 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
     documentFragment.appendChild(observableListDisposeNode);
     parentNode.appendChild(documentFragment);
 
-    observableList.subscribe(modifications => {
+    observableList.subscribeSneakInLine(modifications => {
         for (let m of modifications) {
             switch (m.type) {
                 case ObservableListModificationType.Append: {
@@ -220,12 +228,14 @@ export function bindProperty(element: Element, name: string, expression: any | O
 
     if (name.indexOf("-") !== -1) {
         if (isObservable(expression)) {
-            let subscription = (expression as Observable<any>).subscribeInvoke(n => { element.setAttribute(name, n); });
+            let subscription = (expression as Observable<any>).subscribeInvokeSneakInLine(n => { element.setAttribute(name, n); });
             appendDisposeCallbackToNode(element, subscription.dispose);
         }
         else if (typeof expression === "function") {
             let computedObservable = co(expression);
-            computedObservable.subscribeInvoke(n => { element.setAttribute(name, n as any); });
+            computedObservable.subscribeInvokeSneakInLine(n => { element.setAttribute(name, n as any); });
+            if ((expression as unknown as NormalizedFunction).dispose)
+                appendDisposeCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
             appendDisposeCallbackToNode(element, computedObservable.dispose);
         }
         else element.setAttribute(name, expression);
@@ -235,7 +245,7 @@ export function bindProperty(element: Element, name: string, expression: any | O
 
         if (isObservable(expression)) {
 
-            let subscription = (expression as Observable<any>).subscribeInvoke(n => { element[name] = n; });
+            let subscription = (expression as Observable<any>).subscribeInvokeSneakInLine(n => { element[name] = n; });
 
             appendDisposeCallbackToNode(element, subscription.dispose);
 
@@ -261,7 +271,9 @@ export function bindProperty(element: Element, name: string, expression: any | O
         }
         else if (typeof expression === "function") {
             let computedObservable = co(expression);
-            computedObservable.subscribeInvoke(n => { element[name] = n; });
+            computedObservable.subscribeInvokeSneakInLine(n => { element[name] = n; });
+            if ((expression as unknown as NormalizedFunction).dispose)
+                appendDisposeCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
             appendDisposeCallbackToNode(element, computedObservable.dispose);
         }
         else element[name] = expression;
@@ -274,12 +286,14 @@ globalPropertyHandlers.set("style", (element: HTMLElement, value: Partial<CSSSty
 
 globalPropertyHandlers.set("role", (element: HTMLElement, value: string | Observable<string> | (() => string)) => {
     if (isObservable(value)) {
-        let subscription = (value as Observable<any>).subscribeInvoke(n => { element.setAttribute("role", n); });
+        let subscription = (value as Observable<any>).subscribeInvokeSneakInLine(n => { element.setAttribute("role", n); });
         appendDisposeCallbackToNode(element, subscription.dispose);
     }
     else if (typeof value === "function") {
         let computedObservable = co(value);
-        computedObservable.subscribeInvoke(n => { element.setAttribute("role", n as any); });
+        computedObservable.subscribeInvokeSneakInLine(n => { element.setAttribute("role", n as any); });
+        if ((value as unknown as NormalizedFunction).dispose)
+            appendDisposeCallbackToNode(element, (value as unknown as NormalizedFunction).dispose);
         appendDisposeCallbackToNode(element, computedObservable.dispose);
     }
     else element.setAttribute("role", value as string);
@@ -289,12 +303,14 @@ export function toggleClass(element: HTMLElement, value: { [name: string]: boole
     for (let p in value) {
         let expression = value[p] as boolean | Observable<boolean> | (() => boolean);
         if (isObservable(expression)) {
-            let subscription = (function (p) { return (expression as Observable<any>).subscribeInvoke(n => { element.classList.toggle(p, n); }); })(p);
+            let subscription = (function (p) { return (expression as Observable<any>).subscribeInvokeSneakInLine(n => { element.classList.toggle(p, n); }); })(p);
             appendDisposeCallbackToNode(element, subscription.dispose);
         }
         else if (typeof expression === "function") {
             let computedObservable = co(expression);
-            (function (p) { computedObservable.subscribeInvoke(n => { element.classList.toggle(p, n); }); })(p);
+            (function (p) { computedObservable.subscribeInvokeSneakInLine(n => { element.classList.toggle(p, n); }); })(p);
+            if ((expression as unknown as NormalizedFunction).dispose)
+                appendDisposeCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
             appendDisposeCallbackToNode(element, computedObservable.dispose);
         }
         else element.classList.toggle(p, expression as boolean);
@@ -305,12 +321,14 @@ globalPropertyHandlers.set("toggle", toggleClass);
 
 export function switchClass(element: HTMLElement, value: Observable<string> | (() => string) | (Observable<string> | (() => string))[]) {
     if (isObservable(value)) {
-        let subscription = (value as Observable<string>).subscribeInvoke(n => { element.className = n; });
+        let subscription = (value as Observable<string>).subscribeInvokeSneakInLine(n => { element.className = n; });
         appendDisposeCallbackToNode(element, subscription.dispose);
     }
     else if (typeof value === "function") {
         let computedObservable = co(value);
-        computedObservable.subscribeInvoke(n => { element.className = n; });
+        computedObservable.subscribeInvokeSneakInLine(n => { element.className = n; });
+        if ((value as unknown as NormalizedFunction).dispose)
+            appendDisposeCallbackToNode(element, (value as unknown as NormalizedFunction).dispose);
         appendDisposeCallbackToNode(element, computedObservable.dispose);
     }
     else {
@@ -318,7 +336,7 @@ export function switchClass(element: HTMLElement, value: Observable<string> | ((
             if (typeof i === "string")
                 element.classList.add(i);
             else if (isObservable(i)) {
-                let subscription = (i as Observable<string>).subscribeInvoke((n, o) => {
+                let subscription = (i as Observable<string>).subscribeInvokeSneakInLine((n, o) => {
                     if (o) element.classList.remove(o);
                     if (n) element.classList.add(n);
                 });
@@ -326,7 +344,7 @@ export function switchClass(element: HTMLElement, value: Observable<string> | ((
             }
             else {
                 let computedObservable = co(i as () => string);
-                computedObservable.subscribeInvoke((n, o) => {
+                computedObservable.subscribeInvokeSneakInLine((n, o) => {
                     if (o) element.classList.remove(o);
                     if (n) element.classList.add(n);
                 });
@@ -358,6 +376,20 @@ export function Managed(_attributes: {}, children: any[]) {
         appendChild(documentFragment, c);
     comment[LAST_MANAGED_CHILD_KEY] = documentFragment.lastChild;
     return documentFragment;
+}
+
+export function normalize<T, U>(normalizeFn: () => T, generateFn: (normalized: ComputedObservable<T>) => U) {
+
+    let normalized = co(normalizeFn), result = () => generateFn(normalized);
+
+    (result as unknown as NormalizedFunction).dispose = normalized.dispose;
+
+    return result;
+}
+
+export interface NormalizedFunction {
+
+    dispose();
 }
 
 export interface IntrinsicElements {

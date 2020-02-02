@@ -1,6 +1,6 @@
 import listStyleTypeStyles from "./index.scss";
 
-import { globalPropertyHandlers } from "@alumis/elastic-ts/JSX";
+import { globalPropertyHandlers } from "@alumis/ts/JSX";
 
 globalPropertyHandlers.set("list-style-type", (element: HTMLElement, value: ListStyleType) => {
     switch (value) {

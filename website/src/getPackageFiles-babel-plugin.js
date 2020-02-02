@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const ts = require("typescript");
 
-const PACKAGE_PATH = "node_modules/@alumis/elastic-ts";
+const PACKAGE_PATH = "node_modules/@alumis/ts";
 
 module.exports = function ({ types: t }) {
   return {
@@ -17,7 +17,7 @@ module.exports = function ({ types: t }) {
 
           //   console.log("-----");
 
-          // let tsFileNames = fs.readdirSync("./node_modules/@alumis/elastic-ts").filter(p => p.endsWith(".ts") || p.endsWith(".tsx")).map(p => path.join("./node_modules/@alumis/elastic-ts", p));
+          // let tsFileNames = fs.readdirSync("./node_modules/@alumis/ts").filter(p => p.endsWith(".ts") || p.endsWith(".tsx")).map(p => path.join("./node_modules/@alumis/ts", p));
 
           // let dtsFiles = compile(tsFileNames, {
           //   allowJs: false,
@@ -25,7 +25,7 @@ module.exports = function ({ types: t }) {
           //   emitDeclarationOnly: true,
           // });
 
-          // dtsFiles["node_modules/@alumis/elastic-ts/typings/JSX.d.ts"] = fs.readFileSync("./node_modules/@alumis/elastic-ts/typings/JSX.d.ts", "utf8");
+          // dtsFiles["node_modules/@alumis/ts/typings/JSX.d.ts"] = fs.readFileSync("./node_modules/@alumis/ts/typings/JSX.d.ts", "utf8");
 
           p.replaceWith(t.objectExpression(Object.keys(filesToInclude).map(p => t.objectProperty(t.stringLiteral(p), t.stringLiteral(filesToInclude[p])))));
         }

@@ -83,7 +83,7 @@ module.exports = options => {
                     }
                 },
                 {
-                    test: /^.+\/src\/ElasticWebsite\/index.scss$/,
+                    test: /^.+\/src\/Website\/index.scss$/,
                     use: [
 
                         MiniCssExtractPlugin.loader,
@@ -114,7 +114,7 @@ module.exports = options => {
                 },
                 {
                     test: /\.scss$/,
-                    exclude: [/^.+\/src\/ElasticWebsite\/index.scss$/, /\/monaco-editor/],
+                    exclude: [/^.+\/src\/Website\/index.scss$/, /\/monaco-editor/],
                     use: [
                         "style-loader",
                         "@teamsupercell/typings-for-css-modules-loader",

@@ -59,7 +59,7 @@ let compilePackageFilesAsync = (async () => {
 
 export class CodeRunner {
 
-  constructor(title = "Elastic.js", width = 800, height = 600) {
+  constructor(title = "Alumis", width = 800, height = 600) {
     let top = screen.height / 2 - height / 2, left = screen.width / 2 - width / 2;
     this.window = open("", "", `toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=${width},height=${height},top=${top},left=${left}`);
     if (!this.window)

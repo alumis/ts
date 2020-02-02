@@ -1,6 +1,6 @@
 import progressStyles from "./index.scss";
-import { Component, toggleClass } from "@alumis/elastic-ts/JSX";
-import { Observable } from "@alumis/elastic-ts/Observable";
+import { Component, toggleClass } from "@alumis/ts/JSX";
+import { Observable } from "@alumis/ts/Observable";
 
 export class Progress extends Component<HTMLDivElement> {
 

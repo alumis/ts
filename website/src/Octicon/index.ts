@@ -1,6 +1,6 @@
 import octiconStyles from "./index.scss";
 
-import { bindProperties } from "@alumis/elastic-ts/JSX";
+import { bindProperties } from "@alumis/ts/JSX";
 
 export function Octicon(properties: OcticonProperties) {
 

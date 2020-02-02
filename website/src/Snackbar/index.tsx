@@ -1,9 +1,9 @@
 import snackbarStyles from "./index.scss";
-import { Component, disposeNode } from "@alumis/elastic-ts/JSX";
-import { CancellationToken, LinkedCancellationToken } from "@alumis/elastic-ts/CancellationToken";
-import { Semaphore } from "@alumis/elastic-ts/Semaphore";
-import { OperationCancelledError } from "@alumis/elastic-ts/OperationCancelledError";
-import { delayAsync } from "@alumis/elastic-ts/delayAsync";
+import { Component, disposeNode } from "@alumis/ts/JSX";
+import { CancellationToken, LinkedCancellationToken } from "@alumis/ts/CancellationToken";
+import { Semaphore } from "@alumis/ts/Semaphore";
+import { OperationCancelledError } from "@alumis/ts/OperationCancelledError";
+import { delayAsync } from "@alumis/ts/delayAsync";
 
 export class Snack extends Component<HTMLDivElement> {
 

@@ -53,6 +53,12 @@ export class ComputedObservable<T> implements Observable<T> {
         return ObservableSubscription.createAndAppendToHead(this._head, callback);
     }
 
+    subscribeInvokeSneakInLine(callback: (newValue: T, oldValue: T, error?) => any) {
+        callback(this.wrappedValue, undefined, this.error);
+        let subscription = ObservableSubscription.createAndAppendToHead(this._tail, callback);
+        return subscription;
+    }
+
     private notifySubscribers(newValue: T, oldValue: T, error?) {
         for (let node = this._head.next; node !== this._tail;) {
             let currentNode = node;
@@ -66,10 +72,22 @@ export class ComputedObservable<T> implements Observable<T> {
         this.notifySubscribers(value, value);
     }
 
+    chain<U>(expression: (input: ComputedObservable<T>) => U) {
+
+        let result = co(() => expression(this)), dispose = result.dispose;
+
+        result.dispose = () => {
+            (result.dispose = dispose)();
+            this.dispose();
+        };
+
+        return result;
+    }
+
     dispose() {
-        delete this.wrappedValue;
-        delete this.expression;
-        delete this.error;
+        this.wrappedValue = undefined;
+        this.expression = undefined;
+        this.error = undefined;
         let observables = this.observables;
         observables.forEach(s => { s.dispose(); });
         observables.clear();

@@ -1,8 +1,8 @@
 import tutorialPageStyles from "./index.scss";
 
-import { DirectoryPage, PageDirection, Page, HttpStatusCode, combinePath } from "@alumis/elastic-ts/SPA";
-import { ModifiableObservable, o } from "@alumis/elastic-ts/ModifiableObservable";
-import { Managed } from "@alumis/elastic-ts/JSX";
+import { DirectoryPage, PageDirection, Page, HttpStatusCode, combinePath } from "@alumis/ts/SPA";
+import { ModifiableObservable, o } from "@alumis/ts/ModifiableObservable";
+import { Managed } from "@alumis/ts/JSX";
 import { ListStyleType } from "../list-style-type";
 import { IntroductionPage } from "./IntroductionPage";
 import { INTRODUCTION_TO_OBSERVABLES_PAGE_RELATIVE_PATH, INTRODUCTION_TO_OBSERVABLES_PAGE_MENU_ITEM } from "./IntroductionToObservablesPage/metadata";

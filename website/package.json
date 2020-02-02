@@ -1,7 +1,7 @@
 {
   "name": "website",
   "version": "1.0.0",
-  "description": "Elastic website",
+  "description": "Alumis website",
   "scripts": {
     "clean": "node ./node_modules/rimraf/bin.js ./dist",
     "start:dev": "npm run clean && node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.config.dev.js --history-api-fallback",
@@ -15,7 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@alumis/elastic-ts": "^1.0.0",
+    "@alumis/ts": "1.0.0",
     "@babel/core": "7.7.5",
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-syntax-dynamic-import": "^7.7.4",

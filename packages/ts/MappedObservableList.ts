@@ -72,7 +72,7 @@ export class MappedObservableList<T, U> extends ObservableList<U> {
     dispose() {
         super.dispose();
         delete this._map;
-        this._sourceListSubscription.unsubscribeAndRecycle();
+        this._sourceListSubscription.dispose();
         delete this._sourceListSubscription;
     }
 }

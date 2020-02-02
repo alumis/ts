@@ -1,5 +1,5 @@
 import externalLinkStyles from "./index.scss";
-import { HTMLAttributes } from "@alumis/elastic-ts/JSX";
+import { HTMLAttributes } from "@alumis/ts/JSX";
 import { Octicon, OcticonSize } from "../Octicon";
 import LinkExternal from "../Octicons/LinkExternal";
 

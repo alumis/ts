@@ -1,4 +1,4 @@
-import { o } from "@alumis/elastic-ts/ModifiableObservable";
+import { o } from "@alumis/ts/ModifiableObservable";
 import { decomposeDeviceWidth } from "../grid";
 
 export var currentDeviceWidth = o(decomposeDeviceWidth(innerWidth));
