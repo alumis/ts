@@ -1,7 +1,3 @@
-import css from "./index.scss";
-console.log(css);
-import { bootstrapJSX } from "@alumis/ts/JSX";
+import "./index.scss";
 
-console.log(VER);
-
-bootstrapJSX();
+document.body.appendChild(<p>Hello, world!</p>);

@@ -55,15 +55,16 @@ module.exports = options => {
             presets: babelLoaderPresets,
             plugins: [
               "@babel/proposal-class-properties",
-              ["@babel/plugin-transform-react-jsx", { pragma: "createNode", pragmaFrag: "null" }],
+              ["module:@alumis/babel-plugin-transform-jsx"],
               "@babel/plugin-syntax-dynamic-import",
             ]
           }
         },
         {
-          test: /^.+\/src\/index.scss$/,
+          test: /\/src\/index.scss$/,
           use: [
             MiniCssExtractPlugin.loader,
+            "@teamsupercell/typings-for-css-modules-loader",
             {
               loader: "css-loader",
               options: {
@@ -90,9 +91,10 @@ module.exports = options => {
         },
         {
           test: /\.scss$/,
-          exclude: [/^.+\/src\/index.scss$/],
+          exclude: [/\/src\/index.scss$/],
           use: [
             "style-loader",
+            "@teamsupercell/typings-for-css-modules-loader",
             {
               loader: "css-loader",
               options: {
@@ -120,8 +122,8 @@ module.exports = options => {
       ]
     },
     plugins: [
-      new Webpack.DefinePlugin(constants),
       new CleanWebpackPlugin(),
+      new Webpack.DefinePlugin(constants),
       new HtmlWebpackPlugin({
         title: "Alumis app",
         template: "./src/index.html",
