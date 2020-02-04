@@ -4,11 +4,6 @@ import { ModifiableObservable } from "./ModifiableObservable";
 import { isObservable } from "./isObservable";
 import { ObservableList, ObservableListModificationType } from "./ObservableList";
 
-export function bootstrapJSX() {
-    // @ts-ignore
-    self.createNode = createNode;
-}
-
 export var globalPropertyHandlers = new Map<string, (node: Node, value, properties: { [name: string]: any }) => any>();
 
 export abstract class Component<TNode extends Node> {

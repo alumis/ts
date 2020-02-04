@@ -1,10 +1,6 @@
-import { bootstrapJSX, normalize } from "@alumis/ts/JSX";
 import { Website } from "./Website";
 
-bootstrapJSX();
-
 import "./grid";
-import { o } from "@alumis/ts/ModifiableObservable";
 
 // @ts-ignore
 self.MonacoEnvironment = {

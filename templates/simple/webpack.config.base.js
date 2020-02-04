@@ -55,7 +55,7 @@ module.exports = options => {
             presets: babelLoaderPresets,
             plugins: [
               "@babel/proposal-class-properties",
-              ["module:@alumis/babel-plugin-transform-jsx"],
+              "module:@alumis/babel-plugin-transform-jsx",
               "@babel/plugin-syntax-dynamic-import",
             ]
           }

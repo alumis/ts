@@ -1,11 +1,6 @@
 declare namespace IndexScssModule {
   export interface IIndexScss {
-    file: string;
-    mappings: string;
-    names: string;
-    sources: string;
-    sourcesContent: string;
-    version: string;
+    green: string;
   }
 }
 

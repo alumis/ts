@@ -41,10 +41,7 @@ export class IntroductionToJSXPlusObservablesPage extends Page<HTMLDivElement> {
   }
 }
 
-let bindingToAttributesExampleModel = monaco.editor.createModel(`import { bootstrapJSX } from "@alumis/ts/JSX";
-import { o } from "@alumis/ts/ModifiableObservable";
-
-bootstrapJSX(); // When using JSX, you need to call this function at the beginning of your app
+let bindingToAttributesExampleModel = monaco.editor.createModel(`import { o } from "@alumis/ts/ModifiableObservable";
 
 let surname = o("Lovelace");
 let isSubmittingForm = o(false);

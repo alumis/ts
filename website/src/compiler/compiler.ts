@@ -41,22 +41,6 @@ let compilePackageFilesAsync = (async () => {
   return await postMessageAsync<string>(CompilerMessageType.Compile, files);
 })();
 
-// case CompilerMessageType.PackageFiles:
-//   packageFiles = {};
-//   for (let p in message.data) {
-//     if (!p.startsWith("/node_modules/"))
-//       throw new Error();
-//     packageFiles[p.substr("/node_modules/".length)] = message.data[p];
-//   }
-//   ctx.postMessage(<CompilerResponseMessage<void>>{ id: message.id });
-//   break;
-//let transferPackageFilesPromise = postMessageAsync<void>(CompilerMessageType.PackageFiles, packageFiles);
-
-// export async function compileAsync(files: { [filePath: string]: string; }) {
-//   await transferPackageFilesPromise;
-//   return await postMessageAsync<{ [filePath: string]: string; }>(CompilerMessageType.Compile, files);
-// }
-
 export class CodeRunner {
 
   constructor(title = "Alumis", width = 800, height = 600) {
@@ -88,10 +72,11 @@ export class CodeRunner {
         files[p.substr("/node_modules/".length)] = packageFiles[p];
     }
 
+    files["bootstrap.tsx"] = `import { createNode } from "@alumis/ts/JSX"; window["createNode"] = createNode`;
     files["index.tsx"] = code;
 
     let dependencies = await Promise.all([this._loadRequireJsPromise, postMessageAsync<string>(CompilerMessageType.Compile, files)]);
-    this.window.window.eval(dependencies[1] + ";require(['index'])");
+    this.window.window.eval(dependencies[1] + ";require(['bootstrap']);require(['index'])");
   }
 }
 

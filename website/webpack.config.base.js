@@ -65,25 +65,22 @@ module.exports = options => {
                 //     use: { loader: 'worker-loader' }
                 // },
                 {
-                    test: /\.(js|ts|tsx)$/,
-                    exclude: /\/monaco-editor/,
+                    test: /\.(ts|tsx)$/,
+                    // exclude: /\/monaco-editor/,
                     loader: "babel-loader",
                     options: {
-                        ignore: [ // See https://github.com/webpack/webpack/issues/4039 and https://stackoverflow.com/questions/52407499/how-do-i-use-babels-usebuiltins-usage-option-on-the-vendors-bundle/52415747#52415747
-                            /\/core-js/
-                        ],
                         sourceType: "unambiguous",
                         presets: babelLoaderPresets,
                         plugins: [
                             "./src/getPackageFiles-babel-plugin",
                             "@babel/proposal-class-properties",
-                            ["@babel/plugin-transform-react-jsx", { pragma: "createNode", pragmaFrag: "null" }],
+                            "module:@alumis/babel-plugin-transform-jsx",
                             "@babel/plugin-syntax-dynamic-import",
                         ]
                     }
                 },
                 {
-                    test: /^.+\/src\/Website\/index.scss$/,
+                    test: /\/src\/Website\/index.scss$/,
                     use: [
 
                         MiniCssExtractPlugin.loader,
@@ -114,7 +111,7 @@ module.exports = options => {
                 },
                 {
                     test: /\.scss$/,
-                    exclude: [/^.+\/src\/Website\/index.scss$/, /\/monaco-editor/],
+                    exclude: [/\/src\/Website\/index.scss$/, /\/monaco-editor/],
                     use: [
                         "style-loader",
                         "@teamsupercell/typings-for-css-modules-loader",

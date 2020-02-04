@@ -53,7 +53,7 @@ export class ModifiableObservable<T> implements Observable<T> {
 
     subscribeInvokeSneakInLine(callback: (newValue: T, oldValue: T) => any) {
         callback(this.wrappedValue, undefined);
-        let subscription = ObservableSubscription.createAndAppendToHead(this._subscriptionTail, callback);
+        let subscription = ObservableSubscription.createAndAppendToHead(this._subscriptionHead, callback);
         return subscription;
     }
 

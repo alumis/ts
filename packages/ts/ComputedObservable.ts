@@ -10,13 +10,13 @@ export class ComputedObservable<T> implements Observable<T> {
     constructor() {
         this.refresh = this.refresh.bind(this);
         this.dispose = this.dispose.bind(this);
-        (this._head.next = this._tail).previous = this._head;
+        (this._subscriptionHead.next = this._subscriptionTail).previous = this._subscriptionHead;
     }
 
     wrappedValue: T;
 
-    private _head = ObservableSubscription.create<(newValue: T, oldValue: T, error?) => any>();
-    private _tail = ObservableSubscription.create<(newValue: T, oldValue: T, error?) => any>();
+    private _subscriptionHead = ObservableSubscription.create<(newValue: T, oldValue: T, error?) => any>();
+    private _subscriptionTail = ObservableSubscription.create<(newValue: T, oldValue: T, error?) => any>();
 
     expression: () => T;
     error;
@@ -40,27 +40,27 @@ export class ComputedObservable<T> implements Observable<T> {
     }
 
     subscribe(callback: (newValue: T, oldValue: T, error?) => any) {
-        return ObservableSubscription.createAndPrependToTail(this._tail, callback);
+        return ObservableSubscription.createAndPrependToTail(this._subscriptionTail, callback);
     }
 
     subscribeInvoke(callback: (newValue: T, oldValue: T, error?) => any) {
         callback(this.wrappedValue, undefined, this.error);
-        let subscription = ObservableSubscription.createAndPrependToTail(this._tail, callback);
+        let subscription = ObservableSubscription.createAndPrependToTail(this._subscriptionTail, callback);
         return subscription;
     }
 
     subscribeSneakInLine(callback: (newValue: T, oldValue: T, error?) => any) {
-        return ObservableSubscription.createAndAppendToHead(this._head, callback);
+        return ObservableSubscription.createAndAppendToHead(this._subscriptionHead, callback);
     }
 
     subscribeInvokeSneakInLine(callback: (newValue: T, oldValue: T, error?) => any) {
         callback(this.wrappedValue, undefined, this.error);
-        let subscription = ObservableSubscription.createAndAppendToHead(this._tail, callback);
+        let subscription = ObservableSubscription.createAndAppendToHead(this._subscriptionHead, callback);
         return subscription;
     }
 
     private notifySubscribers(newValue: T, oldValue: T, error?) {
-        for (let node = this._head.next; node !== this._tail;) {
+        for (let node = this._subscriptionHead.next; node !== this._subscriptionTail;) {
             let currentNode = node;
             node = node.next;
             currentNode.callback(newValue, oldValue, error);
@@ -91,12 +91,12 @@ export class ComputedObservable<T> implements Observable<T> {
         let observables = this.observables;
         observables.forEach(s => { s.dispose(); });
         observables.clear();
-        for (let node = this._head.next; node !== this._tail;) {
+        for (let node = this._subscriptionHead.next; node !== this._subscriptionTail;) {
             let currentNode = node;
             node = node.next;
             currentNode.recycle();
         }
-        (this._head.next = this._tail).previous = this._head;
+        (this._subscriptionHead.next = this._subscriptionTail).previous = this._subscriptionHead;
         if (bin.length === binLength)
             bin.push(this);
         else bin[binLength] = this;

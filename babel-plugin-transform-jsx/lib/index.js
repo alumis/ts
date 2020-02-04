@@ -42,7 +42,7 @@ module.exports = declare((api, options) => {
     throwIfNamespace: THROW_IF_NAMESPACE,
   });
 
-  visitor.JSXElement.enter = visitor.JSXFragment = (path, state) => state.set("jsx", true);
+  visitor.JSXElement.enter = visitor.JSXFragment.enter = (path, state) => state.set("jsx", true);
 
   visitor.Program = {
     enter(path, state) {

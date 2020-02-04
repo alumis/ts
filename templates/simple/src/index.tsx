@@ -1,3 +1,3 @@
-import "./index.scss";
+import styles from "./index.scss";
 
-document.body.appendChild(<p>Hello, world!</p>);
+document.body.appendChild(<p className={styles.green}>Hello, World!</p>);

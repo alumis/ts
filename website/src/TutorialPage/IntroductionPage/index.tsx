@@ -53,10 +53,7 @@ export class IntroductionPage extends Page<HTMLDivElement> {
   }
 }
 
-let exampleModel = monaco.editor.createModel(`import { bootstrapJSX } from "@alumis/ts/JSX";
-import { o } from "@alumis/ts/ModifiableObservable";
-
-bootstrapJSX(); // When using JSX, you need to call this function at the beginning of your app
+let exampleModel = monaco.editor.createModel(`import { o } from "@alumis/ts/ModifiableObservable";
 
 let givenName = o("todo"); // Creates a ModifiableObservable<string>
 
