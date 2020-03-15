@@ -80,7 +80,7 @@ module.exports = options => {
                     }
                 },
                 {
-                    test: /\/src\/Website\/index.scss$/,
+                    test: /(\/|\\)src(\/|\\)Website(\/|\\)index.scss$/,
                     use: [
 
                         MiniCssExtractPlugin.loader,
@@ -111,7 +111,7 @@ module.exports = options => {
                 },
                 {
                     test: /\.scss$/,
-                    exclude: [/\/src\/Website\/index.scss$/, /\/monaco-editor/],
+                    exclude: [/(\/|\\)src(\/|\\)Website(\/|\\)index.scss$/, /(\/|\\)monaco-editor/],
                     use: [
                         "style-loader",
                         "@teamsupercell/typings-for-css-modules-loader",
@@ -140,16 +140,16 @@ module.exports = options => {
                     ]
                 },
                 {
-                    test: /\/monaco-editor\/.+\.ts?$/,
+                    test: /(\/|\\)monaco-editor(\/|\\).+\.ts?$/,
                     use: "ts-loader",
                     exclude: /node_modules/
                 },
                 {
-                    test: /\/monaco-editor\/.+\.css$/,
+                    test: /(\/|\\)monaco-editor(\/|\\).+\.css$/,
                     use: ["style-loader", "css-loader"]
                 },
                 {
-                    test: /\/monaco-editor\/.+\.ttf$/,
+                    test: /(\/|\\)monaco-editor(\/|\\).+\.ttf$/,
                     use: ['file-loader']
                 }
             ]
