@@ -13,20 +13,20 @@ export function whenAsync(expression: () => boolean, cancellationToken?: Cancell
                     if (listener)
                         cancellationToken.removeListener(listener);
                     else notRejected = false;
-                    setTimeout(observableExpression.dispose, 0);
+                    queueMicrotask(observableExpression.dispose);
                     reject(e);
                 }
             });
             if (notRejected) {
                 listener = () => {
-                    setTimeout(observableExpression.dispose, 0);
+                    queueMicrotask(observableExpression.dispose);
                     reject(new OperationCancelledError());
                 };
                 cancellationToken.addListener(listener);
                 observableExpression.subscribeInvoke(n => {
                     if (n) {
                         cancellationToken.removeListener(listener);
-                        setTimeout(observableExpression.dispose, 0);
+                        queueMicrotask(observableExpression.dispose);
                         resolve(n);
                     }
                 });
@@ -41,14 +41,14 @@ export function whenAsync(expression: () => boolean, cancellationToken?: Cancell
                 }
                 catch (e) {
                     notRejected = false;
-                    setTimeout(observableExpression.dispose, 0);
+                    queueMicrotask(observableExpression.dispose);
                     reject(e);
                 }
             });
             if (notRejected) {
                 observableExpression.subscribeInvoke(n => {
                     if (n) {
-                        setTimeout(observableExpression.dispose, 0);
+                        queueMicrotask(observableExpression.dispose);
                         resolve(n);
                     }
                 });
