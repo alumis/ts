@@ -1,0 +1,25 @@
+{
+  "name": "@alumis/ts-observables",
+  "version": "1.0.0",
+  "description": "A TypeScript observable library.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alumis/ts.git",
+    "directory": "packages/ts-observables"
+  },
+  "keywords": [
+    "Observable"
+  ],
+  "author": "Emil Muller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alumis/ts/issues"
+  },
+  "homepage": "https://github.com/alumis/ts#readme",
+  "devDependencies": {
+    "@alumis/ts-async": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@alumis/ts-async": "^1.0.0"
+  }
+}

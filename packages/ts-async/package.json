@@ -1,0 +1,23 @@
+{
+  "name": "@alumis/ts-async",
+  "version": "1.0.0",
+  "description": "A TypeScript async utility library that includes a C#-style CancellationToken, OperationCancelledError and Semaphore, as well as various other utility async functions.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alumis/ts.git",
+    "directory": "packages/ts-async"
+  },
+  "keywords": [
+    "CancellationToken",
+    "Semaphore",
+    "delayAsync",
+    "fetchAsync",
+    "loadScriptAsync"
+  ],
+  "author": "Emil Muller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alumis/ts/issues"
+  },
+  "homepage": "https://github.com/alumis/ts#readme"
+}

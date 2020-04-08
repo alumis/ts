@@ -1,0 +1,30 @@
+{
+  "name": "@alumis/ts-observables-i18n",
+  "version": "1.0.0",
+  "description": "Localization using @alumis/ts-observables",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alumis/ts.git",
+    "directory": "packages/ts-observables-i18n"
+  },
+  "keywords": [
+    "localization",
+    "i18n",
+    "Observable"
+  ],
+  "author": "Emil Muller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alumis/ts/issues"
+  },
+  "homepage": "https://github.com/alumis/ts#readme",
+  "dependencies": {
+    "fast-xml-parser": "^3.16.0"
+  },
+  "peerDependencies": {
+    "@alumis/ts-observables": "^1.0.0"
+  },
+  "devDependencies": {
+    "@alumis/ts-observables": "^1.0.0"
+  }
+}
