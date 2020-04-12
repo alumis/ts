@@ -25,7 +25,7 @@ class ObservableI18nPlugin {
 
     apply(compiler) {
 
-        const moduleName = "./node_modules/@alumis/ts-observables-i18n/__ts-observables-i18n.json";
+        const moduleName = "./node_modules/@alumis/ts-observables-i18n/__translations.json";
         const ctime = ObservableI18nPlugin.statsDate();
         const self = this;
 

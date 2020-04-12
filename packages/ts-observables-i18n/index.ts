@@ -1,5 +1,5 @@
 import { o, ModifiableObservable } from "@alumis/ts-observables/ModifiableObservable";
-import * as languageData from "./__observables-i18n.json";
+import * as languageData from "./__translations.json";
 
 export class Language {
 
