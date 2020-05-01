@@ -90,7 +90,7 @@ module.exports = declare((api, options) => {
 
         const createNodeIdentifier = t.identifier("createNode");
         const createNodeImportSpecifier = t.importSpecifier(state.get("jsxIdentifier")(), createNodeIdentifier);
-        const createNodeImportDeclaration = t.importDeclaration([createNodeImportSpecifier], t.stringLiteral("@alumis/ts/JSX"));
+        const createNodeImportDeclaration = t.importDeclaration([createNodeImportSpecifier], t.stringLiteral("@alumis/ts-jsx/JSX"));
 
         path.unshiftContainer("body", createNodeImportDeclaration);
       }

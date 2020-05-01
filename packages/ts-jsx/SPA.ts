@@ -73,13 +73,13 @@ const PAGE_NUMBERS_KEY = "__pageNumbers";
 
 export abstract class SPA<TNode extends Node, TPageNode extends Node> extends DirectoryPage<TNode, TPageNode> {
 
-    constructor() {
+    constructor(private usePathnameQueryParameterInsteadOfPathname = false) {
         super();
         addEventListener("click", e => {
             let target = <HTMLElement>e.target;
             do {
                 if (target.tagName === "A") {
-                    if ((<HTMLAnchorElement>target).host !== location.host)
+                    if ((<HTMLAnchorElement>target).host !== location.host || this.usePathnameQueryParameterInsteadOfPathname && (<HTMLAnchorElement>target).pathname !== location.pathname)
                         return;
                     history.pushState(null, null, (<HTMLAnchorElement>target).href);
                     this.invalidateLocationAsync();
@@ -122,9 +122,12 @@ export abstract class SPA<TNode extends Node, TPageNode extends Node> extends Di
         else if (this._currentPageNumber < oldCurrentPageNumber)
             pageDirection = PageDirection.Backward;
         else pageDirection = PageDirection.None;
-        let locationComponents = getLocationComponents(location.pathname, location.search);
+        let parameters = new URLSearchParams(location.search), pathname = (this.usePathnameQueryParameterInsteadOfPathname ? parameters.get("pathname") : location.pathname) || "";
+        if (pathname.startsWith("/"))
+            pathname = pathname.substr(1);
+        let pathnameParts = pathname.split("/").map(p => decodeURIComponent(p));
         await this.loadLocationSemaphore.waitOneAsync();
-        try { await this.loadSubPageAsync(locationComponents.path, 0, locationComponents.parameters, pageDirection, e); }
+        try { await this.loadSubPageAsync(pathnameParts, 0, parameters, pageDirection, e); }
         finally { this.loadLocationSemaphore.release(); }
     }
 
@@ -134,12 +137,6 @@ export abstract class SPA<TNode extends Node, TPageNode extends Node> extends Di
     }
 
     loadLocationSemaphore = new Semaphore();
-}
-
-function getLocationComponents(pathName: string, search: string) {
-    if (pathName.startsWith("/"))
-        pathName = pathName.substr(1);
-    return { path: pathName ? pathName.split("/").map(p => decodeURIComponent(p)) : [], parameters: new URLSearchParams(search) };
 }
 
 export function combinePath(path: string[], ...subPath: string[]) {
