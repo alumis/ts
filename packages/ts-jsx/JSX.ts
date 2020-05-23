@@ -10,8 +10,8 @@ export abstract class Component<TNode extends Node> {
 
     node: TNode;
 
-    nodeDestroyed() {
-        delete this.node;
+    dispose() {
+        this.node = null;
     }
 }
 
@@ -34,11 +34,11 @@ function createHTMLElementFromTagName(tagName: string, properties: { [name: stri
     return element;
 }
 
-function appendChild(parentNode: Node, child) {
+export function appendChild(parentNode: Node, child) {
     if (child instanceof Component) {
         appendChild(parentNode, child.node);
-        let componentDisposeNode = document.createComment(" Elastic: dispose component ");
-        appendDisposeCallbackToNode(componentDisposeNode, child.nodeDestroyed.bind(child));
+        let componentDisposeNode = document.createComment(" dispose component ");
+        appendDisposeCallbackToNode(componentDisposeNode, child.dispose.bind(child));
         parentNode.appendChild(componentDisposeNode);
     }
     else if (child instanceof HTMLElement || child instanceof SVGElement || child instanceof Comment || child instanceof DocumentFragment)
@@ -60,7 +60,7 @@ function appendObservableChild(parentNode: Node, observable: Observable<any>, ob
 
     // TODO: Reuse text node
 
-    let value = observable.peek(), head = document.createComment(" Elastic: head "), documentFragment = document.createDocumentFragment(), tail = document.createComment(" Elastic: tail ");
+    let value = observable.peek(), head = document.createComment(" head "), documentFragment = document.createDocumentFragment(), tail = document.createComment(" tail ");
 
     documentFragment.appendChild(head);
     appendChild(documentFragment, value);
@@ -102,8 +102,8 @@ function appendObservableChild(parentNode: Node, observable: Observable<any>, ob
     else appendDisposeCallbackToNode(tail, subscription.dispose);
 }
 
-const DISPOSE_CALLBACKS_KEY = "__disposeCallbacks";
-const LAST_MANAGED_CHILD_KEY = "__lastManagedChild";
+export const DISPOSE_CALLBACKS_KEY = "__disposeCallbacks";
+export const LAST_MANAGED_CHILD_KEY = "__lastManagedChild";
 
 export function appendDisposeCallbackToNode(node: Node, dispose: () => any) {
     let disposeCallbacks: (() => any)[] = node[DISPOSE_CALLBACKS_KEY];
@@ -143,7 +143,7 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
         let item: ListItem = { firstChild: n ? n.nextSibling : documentFragment.firstChild, lastChild: (n = documentFragment.lastChild) };
         items.set(node.item, item);
     }
-    let observableListDisposeNode = document.createComment(" Elastic: dispose list ");
+    let observableListDisposeNode = document.createComment(" dispose list ");
     documentFragment.appendChild(observableListDisposeNode);
     parentNode.appendChild(documentFragment);
 
@@ -365,7 +365,7 @@ function createDocumentFragment(children: any[]) {
 }
 
 export function Managed(_attributes: {}, children: any[]) {
-    let documentFragment = document.createDocumentFragment(), comment = document.createComment(" Elastic: managed ");
+    let documentFragment = document.createDocumentFragment(), comment = document.createComment(" managed ");
     documentFragment.appendChild(comment);
     for (let c of children)
         appendChild(documentFragment, c);
@@ -385,6 +385,34 @@ export function normalize<T, U>(normalizeFn: () => T, generateFn: (normalized: C
 export interface NormalizedFunction {
 
     dispose();
+}
+
+export function replaceChildNodesWithDocumentFragment(parentNode: Node, documentFragment: DocumentFragment) {
+
+    let oldChildNodes = document.createDocumentFragment();
+
+    for (let cn of parentNode.childNodes)
+        oldChildNodes.appendChild(cn);
+
+    parentNode.appendChild(documentFragment);
+
+    return oldChildNodes;
+}
+
+export function disposeDocumentFragment(documentFragment: DocumentFragment) {
+    for (let child = documentFragment.firstChild; child;) {
+        let lastManagedChild: ChildNode = child[LAST_MANAGED_CHILD_KEY];
+        if (lastManagedChild) {
+            child = child.nextSibling;
+            while (child !== lastManagedChild) {
+                child = child.nextSibling;
+            }
+        }
+        else {
+            disposeNode(child);
+            child = child.nextSibling;
+        }
+    }
 }
 
 export interface IntrinsicElements {
