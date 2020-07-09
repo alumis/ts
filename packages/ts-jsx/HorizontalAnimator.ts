@@ -1,4 +1,4 @@
-import { Component, appendChild, bindProperties, NormalizedFunction, appendDisposeCallbackToNode, disposeDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes } from "./JSX";
+import { Component, appendChild, bindProperties, NormalizedFunction, appendDestroyCallbackToNode, destroyDocumentFragment as destroyDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes } from "./JSX";
 import { Observable } from "@alumis/ts-observables/Observable";
 import { isObservable } from "@alumis/ts-observables/isObservable";
 import { co } from "@alumis/ts-observables/ComputedObservable";
@@ -13,7 +13,7 @@ export class HorizontalAnimator extends Component<HTMLDivElement> {
 
         super();
 
-        let { expression, ...otherProperties } = properties;
+        let { expression, ...domProperties } = properties;
 
         let observable: Observable<any>, observableExpression: () => any;
 
@@ -22,12 +22,12 @@ export class HorizontalAnimator extends Component<HTMLDivElement> {
         else if (typeof expression === "function")
             observable = co(observableExpression = expression);
 
-        this.node = document.createElement("div");
+        let node = document.createElement("div");
 
         let value = observable.peek(), documentFragment = document.createDocumentFragment(), semaphore = new Semaphore();
 
         appendChild(documentFragment, value);
-        this.node.appendChild(documentFragment);
+        node.appendChild(documentFragment);
 
         let ct: CancellationToken;
 
@@ -42,28 +42,28 @@ export class HorizontalAnimator extends Component<HTMLDivElement> {
 
                 ct = new CancellationToken();
 
-                let currentWidth = this.node.offsetWidth;
+                let currentWidth = node.offsetWidth;
 
-                this.node.style.transition = "none";
-                this.node.style.width = "";
+                node.style.transition = "none";
+                node.style.width = "";
 
                 appendChild(documentFragment, n);
                 
-                let oldChildNodes = replaceChildNodesWithDocumentFragment(this.node, documentFragment);
-                let newWidth = this.node.offsetWidth;
+                let oldChildNodes = replaceChildNodesWithDocumentFragment(node, documentFragment);
+                let newWidth = node.offsetWidth;
 
-                documentFragment = replaceChildNodesWithDocumentFragment(this.node, oldChildNodes);
+                documentFragment = replaceChildNodesWithDocumentFragment(node, oldChildNodes);
 
-                this.node.style.width = currentWidth + "px";
-                this.node.offsetWidth; // Reflow
+                node.style.width = currentWidth + "px";
+                node.offsetWidth; // Reflow
 
                 // Measure complete. Back to original state.
 
                 if (currentWidth) {
 
-                    this.node.className = HorizontalAnimator.exitClassName;
-                    this.node.style.transition = "";
-                    this.node.style.opacity = "0";
+                    node.className = HorizontalAnimator.exitClassName;
+                    node.style.transition = "";
+                    node.style.opacity = "0";
 
                     try {
                         await delayAsync(HorizontalAnimator.exitDuration, ct);
@@ -72,7 +72,7 @@ export class HorizontalAnimator extends Component<HTMLDivElement> {
                     catch (e) {
 
                         if (e instanceof OperationCancelledError) {
-                            disposeDocumentFragment(documentFragment);
+                            destroyDocumentFragment(documentFragment);
                             documentFragment = document.createDocumentFragment();
                             return;
                         }
@@ -83,24 +83,24 @@ export class HorizontalAnimator extends Component<HTMLDivElement> {
 
                 else {
 
-                    this.node.style.opacity = "0";
-                    this.node.offsetWidth; // Reflow
-                    this.node.style.transition = "";
+                    node.style.opacity = "0";
+                    node.offsetWidth; // Reflow
+                    node.style.transition = "";
                 }
 
-                disposeDocumentFragment(replaceChildNodesWithDocumentFragment(this.node, documentFragment));
+                destroyDocumentFragment(replaceChildNodesWithDocumentFragment(node, documentFragment));
 
-                this.node.className = HorizontalAnimator.enterClassName;
+                node.className = HorizontalAnimator.enterClassName;
 
                 if (currentWidth !== newWidth) {
 
-                    this.node.style.width = newWidth + "px";
+                    node.style.width = newWidth + "px";
 
                     try { await delayAsync(HorizontalAnimator.enterDuration, ct); } catch (e) { if (e instanceof OperationCancelledError) return; throw e; }
                 }
 
-                this.node.style.width = "";
-                this.node.style.opacity = "1";
+                node.style.width = "";
+                node.style.opacity = "1";
             }
 
             finally {
@@ -108,19 +108,21 @@ export class HorizontalAnimator extends Component<HTMLDivElement> {
             }
         });
 
-        appendDisposeCallbackToNode(this.node, () => { if (ct) ct.cancel(); });
+        appendDestroyCallbackToNode(node, () => { if (ct) ct.cancel(); });
 
         if (observableExpression) {
 
             if ((observableExpression as unknown as NormalizedFunction).dispose)
-                appendDisposeCallbackToNode(this.node, (observableExpression as unknown as NormalizedFunction).dispose);
+                appendDestroyCallbackToNode(node, (observableExpression as unknown as NormalizedFunction).dispose);
 
-            appendDisposeCallbackToNode(this.node, observable.dispose);
+            appendDestroyCallbackToNode(node, observable.dispose);
         }
 
-        else appendDisposeCallbackToNode(this.node, subscription.dispose);
+        else appendDestroyCallbackToNode(node, subscription.dispose);
 
-        bindProperties(this.node, otherProperties);
+        bindProperties(node, domProperties);
+
+        this.node = node;
     }
 
     static install(enterClassName: string, enterDuration: number, exitClassName: string, exitDuration: number) {

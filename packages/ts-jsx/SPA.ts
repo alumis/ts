@@ -3,8 +3,11 @@ import { Semaphore } from "@alumis/ts-async/Semaphore";
 import { Component } from "./JSX";
 
 export abstract class Page<TNode extends Node = Node> extends Component<TNode> {
-    abstract loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent): Promise<HttpStatusCode>;
     abstract get title(): string;
+    abstract loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent): Promise<LoadResult>;
+    loaded() {
+
+    }
 }
 
 export enum PageDirection {
@@ -24,7 +27,7 @@ export abstract class DirectoryPage<TNode extends Node = Node, TPageNode extends
             this._aliases.set(paths[i], paths[0]);
     }
 
-    async loadSubPageAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent) {
+    async loadSubPageAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent): Promise<LoadResult> {
         if (pathIndex < path.length) {
             let subPageEntry = this._subPages.get(path[pathIndex]);
             if (!subPageEntry) {
@@ -41,17 +44,17 @@ export abstract class DirectoryPage<TNode extends Node = Node, TPageNode extends
                         subPageEntry.loadInstanceAsync = null;
                     }
                 }
-                let pageHttpStatusCode: HttpStatusCode;
+                let loadResult: LoadResult;
                 if (page instanceof DirectoryPage)
-                    pageHttpStatusCode = await page.loadSubPageAsync(path, pathIndex + 1, parameters, pageDirection, e);
-                else pageHttpStatusCode = await page.loadAsync(path, pathIndex + 1, parameters, pageDirection, e);
-                return await this.loadAsync(path, pathIndex, parameters, pageDirection, e, page, pageHttpStatusCode);
+                    loadResult = await page.loadSubPageAsync(path, pathIndex + 1, parameters, pageDirection, e);
+                else loadResult = await page.loadAsync(path, pathIndex + 1, parameters, pageDirection, e);
+                return await this.loadAsync(path, pathIndex, parameters, pageDirection, e, loadResult);
             }
         }
         return await this.loadAsync(path, pathIndex, parameters, pageDirection, e);
     }
 
-    abstract loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent, page?: Page<TPageNode>, pageHttpStatusCode?: HttpStatusCode): Promise<HttpStatusCode>;
+    abstract loadAsync(path: string[], pathIndex: number, parameters: URLSearchParams, pageDirection: PageDirection, e: PopStateEvent, loadResult?: LoadResult): Promise<LoadResult>;
 }
 
 export enum HttpStatusCode {
@@ -71,7 +74,7 @@ export enum HttpStatusCode {
 
 const PAGE_NUMBERS_KEY = "__pageNumbers";
 
-export abstract class SPA<TNode extends Node, TPageNode extends Node> extends DirectoryPage<TNode, TPageNode> {
+export abstract class SPA<TNode extends Node = Node, TPageNode extends Node = Node> extends DirectoryPage<TNode, TPageNode> {
 
     constructor(private usePathnameQueryParameterInsteadOfPathname = false) {
         super();
@@ -127,7 +130,7 @@ export abstract class SPA<TNode extends Node, TPageNode extends Node> extends Di
             pathname = pathname.substr(1);
         let pathnameParts = pathname.split("/").map(p => decodeURIComponent(p));
         await this.loadLocationSemaphore.waitOneAsync();
-        try { await this.loadSubPageAsync(pathnameParts, 0, parameters, pageDirection, e); }
+        try { (await this.loadSubPageAsync(pathnameParts, 0, parameters, pageDirection, e)).subPage.loaded(); }
         finally { this.loadLocationSemaphore.release(); }
     }
 
@@ -139,10 +142,15 @@ export abstract class SPA<TNode extends Node, TPageNode extends Node> extends Di
     loadLocationSemaphore = new Semaphore();
 }
 
-export function combinePath(path: string[], ...subPath: string[]) {
-
-    if (0 < path.length)
-        return "/" + path.join("/") + "/" + subPath.join("/");
-
-    return "/" + subPath.join("/");
+export interface LoadResult<TNode extends Node = Node> {
+    subPage: Page<TNode>;
+    httpStatusCode: HttpStatusCode;
 }
+
+// export function combinePath(path: string[], ...subPath: string[]) {
+
+//     if (0 < path.length)
+//         return "/" + path.join("/") + "/" + subPath.join("/");
+
+//     return "/" + subPath.join("/");
+// }

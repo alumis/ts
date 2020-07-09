@@ -1,4 +1,4 @@
-import { Component, appendChild, bindProperties, NormalizedFunction, appendDestroyCallbackToNode, destroyDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes } from "./JSX";
+import { Component, appendChild, bindProperties, NormalizedFunction, appendDestroyCallbackToNode, destroyDocumentFragment as destroyDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes } from "./JSX";
 import { Observable } from "@alumis/ts-observables/Observable";
 import { isObservable } from "@alumis/ts-observables/isObservable";
 import { co } from "@alumis/ts-observables/ComputedObservable";
@@ -7,9 +7,9 @@ import { OperationCancelledError } from "@alumis/ts-async/OperationCancelledErro
 import { CancellationToken } from "@alumis/ts-async/CancellationToken";
 import { Semaphore } from "@alumis/ts-async/Semaphore";
 
-export class VerticalAnimator extends Component<HTMLDivElement> {
+export class VisibilityAnimator extends Component<HTMLDivElement> {
 
-    constructor(properties: VerticalAnimatorProperties) {
+    constructor(properties: VisibilityAnimatorProperties) {
 
         super();
 
@@ -42,31 +42,16 @@ export class VerticalAnimator extends Component<HTMLDivElement> {
 
                 ct = new CancellationToken();
 
-                let currentHeight = node.offsetHeight;
-
-                node.style.transition = "none";
-                node.style.height = "";
-
                 appendChild(documentFragment, n);
-                
-                let oldChildNodes = replaceChildNodesWithDocumentFragment(node, documentFragment);
-                let newHeight = node.offsetHeight;
 
-                documentFragment = replaceChildNodesWithDocumentFragment(node, oldChildNodes);
+                if (node.childNodes.length && parseFloat(getComputedStyle(node).opacity)) {
 
-                node.style.height = currentHeight + "px";
-                node.offsetHeight; // Reflow
-
-                // Measure complete. Back to original state.
-
-                if (currentHeight) {
-
-                    node.className = VerticalAnimator.exitClassName;
+                    node.className = VisibilityAnimator.exitClassName;
                     node.style.transition = "";
                     node.style.opacity = "0";
 
                     try {
-                        await delayAsync(VerticalAnimator.exitDuration, ct);
+                        await delayAsync(VisibilityAnimator.exitDuration, ct);
                     }
 
                     catch (e) {
@@ -84,23 +69,16 @@ export class VerticalAnimator extends Component<HTMLDivElement> {
                 else {
 
                     node.style.opacity = "0";
-                    node.offsetHeight; // Reflow
+                    node.offsetWidth; // Reflow
                     node.style.transition = "";
                 }
 
                 destroyDocumentFragment(replaceChildNodesWithDocumentFragment(node, documentFragment));
 
-                node.className = VerticalAnimator.enterClassName;
+                node.className = VisibilityAnimator.enterClassName;
 
-                if (currentHeight !== newHeight) {
-
-                    node.style.height = newHeight + "px";
-
-                    try { await delayAsync(VerticalAnimator.enterDuration, ct); } catch (e) { if (e instanceof OperationCancelledError) return; throw e; }
-                }
-
-                node.style.height = "";
                 node.style.opacity = "1";
+
             }
 
             finally {
@@ -113,7 +91,7 @@ export class VerticalAnimator extends Component<HTMLDivElement> {
         if (observableExpression) {
 
             if ((observableExpression as unknown as NormalizedFunction).dispose)
-            appendDestroyCallbackToNode(node, (observableExpression as unknown as NormalizedFunction).dispose);
+                appendDestroyCallbackToNode(node, (observableExpression as unknown as NormalizedFunction).dispose);
 
             appendDestroyCallbackToNode(node, observable.dispose);
         }
@@ -127,11 +105,11 @@ export class VerticalAnimator extends Component<HTMLDivElement> {
 
     static install(enterClassName: string, enterDuration: number, exitClassName: string, exitDuration: number) {
 
-        VerticalAnimator.enterClassName = enterClassName;
-        VerticalAnimator.enterDuration = enterDuration;
+        VisibilityAnimator.enterClassName = enterClassName;
+        VisibilityAnimator.enterDuration = enterDuration;
 
-        VerticalAnimator.exitClassName = exitClassName;
-        VerticalAnimator.exitDuration = exitDuration;
+        VisibilityAnimator.exitClassName = exitClassName;
+        VisibilityAnimator.exitDuration = exitDuration;
     }
 
     static enterClassName: string;
@@ -141,6 +119,6 @@ export class VerticalAnimator extends Component<HTMLDivElement> {
     static exitDuration: number;
 }
 
-export interface VerticalAnimatorProperties extends HTMLAttributes<HTMLDivElement> {
+export interface VisibilityAnimatorProperties extends HTMLAttributes<HTMLDivElement> {
     expression: Observable<any> | (() => any);
 }

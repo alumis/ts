@@ -10,8 +10,7 @@ export abstract class Component<TNode extends Node> {
 
     node: TNode;
 
-    dispose() {
-        this.node = null;
+    unrendered() {
     }
 }
 
@@ -37,9 +36,9 @@ function createHTMLElementFromTagName(tagName: string, properties: { [name: stri
 export function appendChild(parentNode: Node, child) {
     if (child instanceof Component) {
         appendChild(parentNode, child.node);
-        let componentDisposeNode = document.createComment(" dispose component ");
-        appendDisposeCallbackToNode(componentDisposeNode, child.dispose.bind(child));
-        parentNode.appendChild(componentDisposeNode);
+        let componentNodeStroyedComment = document.createComment(` /${child.constructor.name} `);
+        appendDestroyCallbackToNode(componentNodeStroyedComment, child.unrendered.bind(child));
+        parentNode.appendChild(componentNodeStroyedComment);
     }
     else if (child instanceof HTMLElement || child instanceof SVGElement || child instanceof Comment || child instanceof DocumentFragment)
         parentNode.appendChild(child);
@@ -82,7 +81,7 @@ function appendObservableChild(parentNode: Node, observable: Observable<any>, ob
                 }
             }
             else {
-                disposeNode(child);
+                destroyNode(child);
                 let n = child;
                 child = child.nextSibling;
                 n.remove();
@@ -94,25 +93,25 @@ function appendObservableChild(parentNode: Node, observable: Observable<any>, ob
     if (observableExpression) {
 
         if ((observableExpression as unknown as NormalizedFunction).dispose)
-            appendDisposeCallbackToNode(tail, (observableExpression as unknown as NormalizedFunction).dispose);
+            appendDestroyCallbackToNode(tail, (observableExpression as unknown as NormalizedFunction).dispose);
 
-        appendDisposeCallbackToNode(tail, observable.dispose);
+        appendDestroyCallbackToNode(tail, observable.dispose);
     }
 
-    else appendDisposeCallbackToNode(tail, subscription.dispose);
+    else appendDestroyCallbackToNode(tail, subscription.dispose);
 }
 
-export const DISPOSE_CALLBACKS_KEY = "__disposeCallbacks";
+export const DESTROYED_CALLBACKS_KEY = "__destroyCallbacks";
 export const LAST_MANAGED_CHILD_KEY = "__lastManagedChild";
 
-export function appendDisposeCallbackToNode(node: Node, dispose: () => any) {
-    let disposeCallbacks: (() => any)[] = node[DISPOSE_CALLBACKS_KEY];
-    if (disposeCallbacks)
-        disposeCallbacks.push(dispose);
-    else node[DISPOSE_CALLBACKS_KEY] = [dispose];
+export function appendDestroyCallbackToNode(node: Node, destroy: () => any) {
+    let destroyCallbacks: (() => any)[] = node[DESTROYED_CALLBACKS_KEY];
+    if (destroyCallbacks)
+        destroyCallbacks.push(destroy);
+    else node[DESTROYED_CALLBACKS_KEY] = [destroy];
 }
 
-export function disposeNode(node: Node) {
+export function destroyNode(node: Node) {
     if (node.childNodes.length) { // Depth first, post-order tree traversal
         for (let child = node.firstChild; ;) {
             let lastManagedChild: ChildNode = child[LAST_MANAGED_CHILD_KEY];
@@ -120,16 +119,16 @@ export function disposeNode(node: Node) {
                 while (child !== lastManagedChild)
                     child = child.nextSibling;
             }
-            else disposeNode(child);
+            else destroyNode(child);
             if (!(child = child.nextSibling))
                 break;
         }
     }
-    let disposeCallbacks: (() => any)[] = node[DISPOSE_CALLBACKS_KEY];
-    if (disposeCallbacks) {
-        delete node[DISPOSE_CALLBACKS_KEY];
-        for (let i = disposeCallbacks.length; 0 < i;)
-            disposeCallbacks[--i]();
+    let destroyCallbacks: (() => any)[] = node[DESTROYED_CALLBACKS_KEY];
+    if (destroyCallbacks) {
+        delete node[DESTROYED_CALLBACKS_KEY];
+        for (let i = destroyCallbacks.length; 0 < i;)
+            destroyCallbacks[--i]();
     }
 }
 
@@ -143,8 +142,8 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
         let item: ListItem = { firstChild: n ? n.nextSibling : documentFragment.firstChild, lastChild: (n = documentFragment.lastChild) };
         items.set(node.item, item);
     }
-    let observableListDisposeNode = document.createComment(" dispose list ");
-    documentFragment.appendChild(observableListDisposeNode);
+    let observableListNodeDestroyedComment = document.createComment(" /ObservableList ");
+    documentFragment.appendChild(observableListNodeDestroyedComment);
     parentNode.appendChild(documentFragment);
 
     observableList.subscribeSneakInLine(modifications => {
@@ -154,7 +153,7 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
                     appendChild(documentFragment, m.item);
                     let item: ListItem = { firstChild: documentFragment.firstChild, lastChild: documentFragment.lastChild };
                     items.set(m.item, item);
-                    parentNode.insertBefore(documentFragment, observableListDisposeNode);
+                    parentNode.insertBefore(documentFragment, observableListNodeDestroyedComment);
                     break;
                 }
                 case ObservableListModificationType.InsertBefore: {
@@ -177,14 +176,14 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
                         item = { firstChild: documentFragment.firstChild, lastChild: documentFragment.lastChild };
                         items.set(m.item, item);
                     }
-                    parentNode.insertBefore(documentFragment, m.refItem ? items.get(m.refItem).firstChild : observableListDisposeNode);
+                    parentNode.insertBefore(documentFragment, m.refItem ? items.get(m.refItem).firstChild : observableListNodeDestroyedComment);
                     break;
                 }
                 case ObservableListModificationType.Remove: {
                     let item = items.get(m.item);
                     items.delete(m.item);
                     for (let node = item.firstChild; ;) {
-                        disposeNode(node);
+                        destroyNode(node);
                         if (node === item.lastChild) {
                             node.remove();
                             break;
@@ -199,7 +198,7 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
         }
     });
 
-    appendDisposeCallbackToNode(observableListDisposeNode, observableList.dispose);
+    appendDestroyCallbackToNode(observableListNodeDestroyedComment, observableList.dispose);
 }
 
 interface ListItem {
@@ -224,14 +223,14 @@ export function bindProperty(element: Element, name: string, expression: any | O
     if (name.indexOf("-") !== -1) {
         if (isObservable(expression)) {
             let subscription = (expression as Observable<any>).subscribeInvokeSneakInLine(n => { element.setAttribute(name, n); });
-            appendDisposeCallbackToNode(element, subscription.dispose);
+            appendDestroyCallbackToNode(element, subscription.dispose);
         }
         else if (typeof expression === "function") {
             let computedObservable = co(expression);
             computedObservable.subscribeInvokeSneakInLine(n => { element.setAttribute(name, n as any); });
             if ((expression as unknown as NormalizedFunction).dispose)
-                appendDisposeCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
-            appendDisposeCallbackToNode(element, computedObservable.dispose);
+                appendDestroyCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
+            appendDestroyCallbackToNode(element, computedObservable.dispose);
         }
         else element.setAttribute(name, expression);
     }
@@ -242,7 +241,7 @@ export function bindProperty(element: Element, name: string, expression: any | O
 
             let subscription = (expression as Observable<any>).subscribeInvokeSneakInLine(n => { element[name] = n; });
 
-            appendDisposeCallbackToNode(element, subscription.dispose);
+            appendDestroyCallbackToNode(element, subscription.dispose);
 
             if (expression instanceof ModifiableObservable) {
 
@@ -252,13 +251,13 @@ export function bindProperty(element: Element, name: string, expression: any | O
                     case "valueAsNumber": {
                         let listener = (_e: Event) => { expression.setValueDontNotifySubscription(element[name], subscription); };
                         element.addEventListener("input", listener);
-                        appendDisposeCallbackToNode(element, () => { element.removeEventListener("input", listener) });
+                        appendDestroyCallbackToNode(element, () => { element.removeEventListener("input", listener) });
                         break;
                     }
                     case "checked": {
                         let listener = (_e: Event) => { expression.setValueDontNotifySubscription((element as HTMLInputElement).checked, subscription); };
                         element.addEventListener("change", listener);
-                        appendDisposeCallbackToNode(element, () => { element.removeEventListener("change", listener) });
+                        appendDestroyCallbackToNode(element, () => { element.removeEventListener("change", listener) });
                         break;
                     }
                 }
@@ -268,8 +267,8 @@ export function bindProperty(element: Element, name: string, expression: any | O
             let computedObservable = co(expression);
             computedObservable.subscribeInvokeSneakInLine(n => { element[name] = n; });
             if ((expression as unknown as NormalizedFunction).dispose)
-                appendDisposeCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
-            appendDisposeCallbackToNode(element, computedObservable.dispose);
+                appendDestroyCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
+            appendDestroyCallbackToNode(element, computedObservable.dispose);
         }
         else element[name] = expression;
     }
@@ -282,14 +281,14 @@ globalPropertyHandlers.set("style", (element: HTMLElement, value: Partial<CSSSty
 globalPropertyHandlers.set("role", (element: HTMLElement, value: string | Observable<string> | (() => string)) => {
     if (isObservable(value)) {
         let subscription = (value as Observable<any>).subscribeInvokeSneakInLine(n => { element.setAttribute("role", n); });
-        appendDisposeCallbackToNode(element, subscription.dispose);
+        appendDestroyCallbackToNode(element, subscription.dispose);
     }
     else if (typeof value === "function") {
         let computedObservable = co(value);
         computedObservable.subscribeInvokeSneakInLine(n => { element.setAttribute("role", n as any); });
         if ((value as unknown as NormalizedFunction).dispose)
-            appendDisposeCallbackToNode(element, (value as unknown as NormalizedFunction).dispose);
-        appendDisposeCallbackToNode(element, computedObservable.dispose);
+            appendDestroyCallbackToNode(element, (value as unknown as NormalizedFunction).dispose);
+        appendDestroyCallbackToNode(element, computedObservable.dispose);
     }
     else element.setAttribute("role", value as string);
 });
@@ -299,16 +298,16 @@ export function toggleClass(element: HTMLElement, value: { [name: string]: boole
         let expression = value[p] as boolean | Observable<boolean> | (() => boolean);
         if (isObservable(expression)) {
             let subscription = (function (p) { return (expression as Observable<any>).subscribeInvokeSneakInLine(n => { element.classList.toggle(p, n); }); })(p);
-            appendDisposeCallbackToNode(element, subscription.dispose);
+            appendDestroyCallbackToNode(element, subscription.dispose);
         }
         else if (typeof expression === "function") {
             let computedObservable = co(expression);
             (function (p) { computedObservable.subscribeInvokeSneakInLine(n => { element.classList.toggle(p, n); }); })(p);
             if ((expression as unknown as NormalizedFunction).dispose)
-                appendDisposeCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
-            appendDisposeCallbackToNode(element, computedObservable.dispose);
+                appendDestroyCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
+            appendDestroyCallbackToNode(element, computedObservable.dispose);
         }
-        else element.classList.toggle(p, expression as boolean);
+        else element.classList.toggle(p, !!expression);
     }
 }
 
@@ -317,14 +316,14 @@ globalPropertyHandlers.set("toggle", toggleClass);
 export function switchClass(element: HTMLElement, value: Observable<string> | (() => string) | (Observable<string> | (() => string))[]) {
     if (isObservable(value)) {
         let subscription = (value as Observable<string>).subscribeInvokeSneakInLine(n => { element.className = n; });
-        appendDisposeCallbackToNode(element, subscription.dispose);
+        appendDestroyCallbackToNode(element, subscription.dispose);
     }
     else if (typeof value === "function") {
         let computedObservable = co(value);
         computedObservable.subscribeInvokeSneakInLine(n => { element.className = n; });
         if ((value as unknown as NormalizedFunction).dispose)
-            appendDisposeCallbackToNode(element, (value as unknown as NormalizedFunction).dispose);
-        appendDisposeCallbackToNode(element, computedObservable.dispose);
+            appendDestroyCallbackToNode(element, (value as unknown as NormalizedFunction).dispose);
+        appendDestroyCallbackToNode(element, computedObservable.dispose);
     }
     else {
         for (let i of value as (Observable<string> | (() => string))[]) {
@@ -335,7 +334,7 @@ export function switchClass(element: HTMLElement, value: Observable<string> | ((
                     if (o) element.classList.remove(o);
                     if (n) element.classList.add(n);
                 });
-                appendDisposeCallbackToNode(element, subscription.dispose);
+                appendDestroyCallbackToNode(element, subscription.dispose);
             }
             else {
                 let computedObservable = co(i as () => string);
@@ -343,7 +342,7 @@ export function switchClass(element: HTMLElement, value: Observable<string> | ((
                     if (o) element.classList.remove(o);
                     if (n) element.classList.add(n);
                 });
-                appendDisposeCallbackToNode(element, computedObservable.dispose);
+                appendDestroyCallbackToNode(element, computedObservable.dispose);
             }
         }
     }
@@ -389,27 +388,31 @@ export interface NormalizedFunction {
 
 export function replaceChildNodesWithDocumentFragment(parentNode: Node, documentFragment: DocumentFragment) {
 
-    let oldChildNodes = document.createDocumentFragment();
+    let oldChildNodes = document.createDocumentFragment(), firstChild: Node;
 
-    for (let cn of parentNode.childNodes)
-        oldChildNodes.appendChild(cn);
+    while (firstChild = parentNode.firstChild)
+        oldChildNodes.appendChild(firstChild);
 
     parentNode.appendChild(documentFragment);
 
     return oldChildNodes;
 }
 
-export function disposeDocumentFragment(documentFragment: DocumentFragment) {
+export function destroyDocumentFragment(documentFragment: DocumentFragment) {
     for (let child = documentFragment.firstChild; child;) {
         let lastManagedChild: ChildNode = child[LAST_MANAGED_CHILD_KEY];
         if (lastManagedChild) {
-            child = child.nextSibling;
-            while (child !== lastManagedChild) {
+            if (child === lastManagedChild)
                 child = child.nextSibling;
+            else {
+                child = child.nextSibling;
+                while (child !== lastManagedChild) {
+                    child = child.nextSibling;
+                }
             }
         }
         else {
-            disposeNode(child);
+            destroyNode(child);
             child = child.nextSibling;
         }
     }
