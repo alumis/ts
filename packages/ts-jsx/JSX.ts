@@ -350,6 +350,22 @@ export function switchClass(element: HTMLElement, value: Observable<string> | ((
 
 globalPropertyHandlers.set("switch", switchClass);
 
+export function bindCssVariable(element: HTMLElement, name: string, expression: any | Observable<any> | (() => any)) {
+
+    if (isObservable(expression)) {
+        let subscription = (expression as Observable<any>).subscribeInvokeSneakInLine(n => { element.style.setProperty(name, n); });
+        appendDestroyCallbackToNode(element, subscription.dispose);
+    }
+    else if (typeof expression === "function") {
+        let computedObservable = co(expression);
+        computedObservable.subscribeInvokeSneakInLine(n => { element.style.setProperty(name, n as any); });
+        if ((expression as unknown as NormalizedFunction).dispose)
+            appendDestroyCallbackToNode(element, (expression as unknown as NormalizedFunction).dispose);
+        appendDestroyCallbackToNode(element, computedObservable.dispose);
+    }
+    else element.style.setProperty(name, expression);
+}
+
 function createNodeFromFunction(fn, properties: { [name: string]: any }, children: any[]) {
     if (fn.prototype instanceof Component)
         return <Component<Node>>new fn(properties, children);
