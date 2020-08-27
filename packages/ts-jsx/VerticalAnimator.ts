@@ -1,4 +1,4 @@
-import { Component, appendChild, bindProperties, NormalizedFunction, appendDestroyCallbackToNode, destroyDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes } from "./JSX";
+import { Component, appendChild, bindProperties, NormalizedFunction, appendDestroyCallbackToNode, destroyDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes, destroyNode } from "./JSX";
 import { Observable } from "@alumis/ts-observables/Observable";
 import { isObservable } from "@alumis/ts-observables/isObservable";
 import { co } from "@alumis/ts-observables/ComputedObservable";
@@ -7,140 +7,158 @@ import { OperationCancelledError } from "@alumis/ts-async/OperationCancelledErro
 import { CancellationToken } from "@alumis/ts-async/CancellationToken";
 import { Semaphore } from "@alumis/ts-async/Semaphore";
 
-export class VerticalAnimator extends Component<HTMLDivElement> {
+export function VerticalAnimator(properties: VerticalAnimatorProperties) {
 
-    constructor(properties: VerticalAnimatorProperties) {
+    let { expression, ...domProperties } = properties;
 
-        super();
+    let observable: Observable<any>, observableExpression: () => any;
 
-        let { expression, ...domProperties } = properties;
+    if (isObservable(expression))
+        observable = expression as Observable<any>;
+    else if (typeof expression === "function")
+        observable = co(observableExpression = expression);
 
-        let observable: Observable<any>, observableExpression: () => any;
+    let node = document.createElement("div");
+    let anchor = document.createComment(" vertical animator anchor ");
+    let value = observable.peek();
+    let documentFragment = document.createDocumentFragment();
+    let semaphore = new Semaphore();
 
-        if (isObservable(expression))
-            observable = expression as Observable<any>;
-        else if (typeof expression === "function")
-            observable = co(observableExpression = expression);
+    appendChild(documentFragment, value);
+    node.appendChild(documentFragment);
 
-        let node = document.createElement("div");
+    let ct: CancellationToken;
 
-        let value = observable.peek(), documentFragment = document.createDocumentFragment(), semaphore = new Semaphore();
+    let subscription = observable.subscribeSneakInLine(async n => {
 
-        appendChild(documentFragment, value);
-        node.appendChild(documentFragment);
+        if (ct)
+            ct.cancel();
 
-        let ct: CancellationToken;
+        await semaphore.waitOneAsync();
 
-        let subscription = observable.subscribeSneakInLine(async n => {
+        try {
 
-            if (ct)
-                ct.cancel();
+            ct = new CancellationToken();
 
-            await semaphore.waitOneAsync();
+            if (anchor.previousSibling !== node)
+                anchor.parentElement.insertBefore(node, anchor);
 
-            try {
+            let currentHeight = node.offsetHeight;
 
-                ct = new CancellationToken();
+            node.style.transition = "none";
+            node.style.height = "";
 
-                let currentHeight = node.offsetHeight;
+            appendChild(documentFragment, n);
 
-                node.style.transition = "none";
-                node.style.height = "";
+            let oldChildNodes = replaceChildNodesWithDocumentFragment(node, documentFragment);
+            let newHeight = node.offsetHeight;
 
-                appendChild(documentFragment, n);
-                
-                let oldChildNodes = replaceChildNodesWithDocumentFragment(node, documentFragment);
-                let newHeight = node.offsetHeight;
+            documentFragment = replaceChildNodesWithDocumentFragment(node, oldChildNodes);
 
-                documentFragment = replaceChildNodesWithDocumentFragment(node, oldChildNodes);
+            node.style.height = currentHeight + "px";
+            node.offsetHeight; // Reflow
 
-                node.style.height = currentHeight + "px";
+            // Measure complete. Back to original state.
+
+            if (currentHeight) {
+
+                node.className = exitClassName;
+                node.style.transition = "";
+                node.style.opacity = "0";
+
+                try {
+                    await delayAsync(exitDuration, ct);
+                }
+
+                catch (e) {
+
+                    if (e instanceof OperationCancelledError) {
+                        destroyDocumentFragment(documentFragment);
+                        documentFragment = document.createDocumentFragment();
+                        return;
+                    }
+
+                    throw e;
+                }
+            }
+
+            else {
+
+                node.style.opacity = "0";
                 node.offsetHeight; // Reflow
-
-                // Measure complete. Back to original state.
-
-                if (currentHeight) {
-
-                    node.className = VerticalAnimator.exitClassName;
-                    node.style.transition = "";
-                    node.style.opacity = "0";
-
-                    try {
-                        await delayAsync(VerticalAnimator.exitDuration, ct);
-                    }
-
-                    catch (e) {
-
-                        if (e instanceof OperationCancelledError) {
-                            destroyDocumentFragment(documentFragment);
-                            documentFragment = document.createDocumentFragment();
-                            return;
-                        }
-
-                        throw e;
-                    }
-                }
-
-                else {
-
-                    node.style.opacity = "0";
-                    node.offsetHeight; // Reflow
-                    node.style.transition = "";
-                }
-
-                destroyDocumentFragment(replaceChildNodesWithDocumentFragment(node, documentFragment));
-
-                node.className = VerticalAnimator.enterClassName;
-
-                if (currentHeight !== newHeight) {
-
-                    node.style.height = newHeight + "px";
-
-                    try { await delayAsync(VerticalAnimator.enterDuration, ct); } catch (e) { if (e instanceof OperationCancelledError) return; throw e; }
-                }
-
-                node.style.height = "";
-                node.style.opacity = "1";
+                node.style.transition = "";
             }
 
-            finally {
-                semaphore.release();
+            destroyDocumentFragment(replaceChildNodesWithDocumentFragment(node, documentFragment));
+
+            node.className = enterClassName;
+
+            if (currentHeight !== newHeight) {
+
+                node.style.height = newHeight + "px";
+
+                try { await delayAsync(enterDuration, ct); } catch (e) { if (e instanceof OperationCancelledError) return; throw e; }
             }
-        });
 
-        appendDestroyCallbackToNode(node, () => { if (ct) ct.cancel(); });
+            node.style.height = "";
+            node.style.opacity = "1";
 
-        if (observableExpression) {
-
-            if ((observableExpression as unknown as NormalizedFunction).dispose)
-            appendDestroyCallbackToNode(node, (observableExpression as unknown as NormalizedFunction).dispose);
-
-            appendDestroyCallbackToNode(node, observable.dispose);
+            if (!node.childNodes.length)
+                node.remove();
         }
 
-        else appendDestroyCallbackToNode(node, subscription.dispose);
+        finally {
+            semaphore.release();
+        }
+    });
 
-        bindProperties(node, domProperties);
+    appendDestroyCallbackToNode(node, () => { if (ct) ct.cancel(); });
 
-        this.node = node;
+    if (observableExpression) {
+
+        if ((observableExpression as unknown as NormalizedFunction).dispose)
+            appendDestroyCallbackToNode(node, (observableExpression as unknown as NormalizedFunction).dispose);
+
+        appendDestroyCallbackToNode(node, observable.dispose);
     }
 
-    static install(enterClassName: string, enterDuration: number, exitClassName: string, exitDuration: number) {
+    else appendDestroyCallbackToNode(node, subscription.dispose);
 
-        VerticalAnimator.enterClassName = enterClassName;
-        VerticalAnimator.enterDuration = enterDuration;
+    appendDestroyCallbackToNode(anchor, () => {
+        if (anchor.previousSibling !== node)
+            destroyNode(node);
+    });
 
-        VerticalAnimator.exitClassName = exitClassName;
-        VerticalAnimator.exitDuration = exitDuration;
+    bindProperties(node, domProperties);
+
+    if (node.childNodes.length) {
+
+        let result = document.createDocumentFragment();
+
+        result.appendChild(node);
+        result.appendChild(anchor);
+
+        return result;
     }
 
-    static enterClassName: string;
-    static enterDuration: number;
-
-    static exitClassName: string;
-    static exitDuration: number;
+    else return anchor;
 }
 
 export interface VerticalAnimatorProperties extends HTMLAttributes<HTMLDivElement> {
     expression: Observable<any> | (() => any);
 }
+
+export function installVerticalAnimator(enterClassName_: string, enterDuration_: number, exitClassName_: string, exitDuration_: number) {
+
+    enterClassName = enterClassName_;
+    enterDuration = enterDuration_;
+
+    exitClassName = exitClassName_;
+    exitDuration = exitDuration_;
+}
+
+let enterClassName: string;
+let enterDuration: number;
+
+let exitClassName: string;
+let exitDuration: number;

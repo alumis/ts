@@ -1,4 +1,4 @@
-import { Component, appendChild, bindProperties, NormalizedFunction, appendDestroyCallbackToNode, destroyDocumentFragment as destroyDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes } from "./JSX";
+import { appendChild, bindProperties, NormalizedFunction, appendDestroyCallbackToNode, destroyDocumentFragment as destroyDocumentFragment, replaceChildNodesWithDocumentFragment, HTMLAttributes, destroyNode } from "./JSX";
 import { Observable } from "@alumis/ts-observables/Observable";
 import { isObservable } from "@alumis/ts-observables/isObservable";
 import { co } from "@alumis/ts-observables/ComputedObservable";
@@ -7,118 +7,136 @@ import { OperationCancelledError } from "@alumis/ts-async/OperationCancelledErro
 import { CancellationToken } from "@alumis/ts-async/CancellationToken";
 import { Semaphore } from "@alumis/ts-async/Semaphore";
 
-export class VisibilityAnimator extends Component<HTMLDivElement> {
+export function VisibilityAnimator(properties: VisibilityAnimatorProperties) {
 
-    constructor(properties: VisibilityAnimatorProperties) {
+    let { expression, ...domProperties } = properties;
 
-        super();
+    let observable: Observable<any>, observableExpression: () => any;
 
-        let { expression, ...domProperties } = properties;
+    if (isObservable(expression))
+        observable = expression as Observable<any>;
+    else if (typeof expression === "function")
+        observable = co(observableExpression = expression);
 
-        let observable: Observable<any>, observableExpression: () => any;
+    let node = document.createElement("div");
+    let anchor = document.createComment(" visibility animator anchor ");
+    let value = observable.peek();
+    let documentFragment = document.createDocumentFragment();
+    let semaphore = new Semaphore();
 
-        if (isObservable(expression))
-            observable = expression as Observable<any>;
-        else if (typeof expression === "function")
-            observable = co(observableExpression = expression);
+    appendChild(documentFragment, value);
+    node.appendChild(documentFragment);
 
-        let node = document.createElement("div");
+    let ct: CancellationToken;
 
-        let value = observable.peek(), documentFragment = document.createDocumentFragment(), semaphore = new Semaphore();
+    let subscription = observable.subscribeSneakInLine(async n => {
 
-        appendChild(documentFragment, value);
-        node.appendChild(documentFragment);
+        if (ct)
+            ct.cancel();
 
-        let ct: CancellationToken;
+        await semaphore.waitOneAsync();
 
-        let subscription = observable.subscribeSneakInLine(async n => {
+        try {
 
-            if (ct)
-                ct.cancel();
+            ct = new CancellationToken();
 
-            await semaphore.waitOneAsync();
+            if (anchor.previousSibling !== node)
+                anchor.parentElement.insertBefore(node, anchor);
 
-            try {
+            appendChild(documentFragment, n);
 
-                ct = new CancellationToken();
+            if (node.childNodes.length && parseFloat(getComputedStyle(node).opacity)) {
 
-                appendChild(documentFragment, n);
+                node.className = exitClassName;
+                node.style.transition = "";
+                node.style.opacity = "0";
 
-                if (node.childNodes.length && parseFloat(getComputedStyle(node).opacity)) {
-
-                    node.className = VisibilityAnimator.exitClassName;
-                    node.style.transition = "";
-                    node.style.opacity = "0";
-
-                    try {
-                        await delayAsync(VisibilityAnimator.exitDuration, ct);
-                    }
-
-                    catch (e) {
-
-                        if (e instanceof OperationCancelledError) {
-                            destroyDocumentFragment(documentFragment);
-                            documentFragment = document.createDocumentFragment();
-                            return;
-                        }
-
-                        throw e;
-                    }
+                try {
+                    await delayAsync(exitDuration, ct);
                 }
 
-                else {
+                catch (e) {
 
-                    node.style.opacity = "0";
-                    node.offsetWidth; // Reflow
-                    node.style.transition = "";
+                    if (e instanceof OperationCancelledError) {
+                        destroyDocumentFragment(documentFragment);
+                        documentFragment = document.createDocumentFragment();
+                        return;
+                    }
+
+                    throw e;
                 }
-
-                destroyDocumentFragment(replaceChildNodesWithDocumentFragment(node, documentFragment));
-
-                node.className = VisibilityAnimator.enterClassName;
-
-                node.style.opacity = "1";
-
             }
 
-            finally {
-                semaphore.release();
+            else {
+
+                node.style.opacity = "0";
+                node.offsetWidth; // Reflow
+                node.style.transition = "";
             }
-        });
 
-        appendDestroyCallbackToNode(node, () => { if (ct) ct.cancel(); });
+            destroyDocumentFragment(replaceChildNodesWithDocumentFragment(node, documentFragment));
 
-        if (observableExpression) {
+            node.className = enterClassName;
 
-            if ((observableExpression as unknown as NormalizedFunction).dispose)
-                appendDestroyCallbackToNode(node, (observableExpression as unknown as NormalizedFunction).dispose);
+            node.style.opacity = "1";
 
-            appendDestroyCallbackToNode(node, observable.dispose);
+            if (!node.childNodes.length)
+                node.remove();
+
         }
 
-        else appendDestroyCallbackToNode(node, subscription.dispose);
+        finally {
+            semaphore.release();
+        }
+    });
 
-        bindProperties(node, domProperties);
+    appendDestroyCallbackToNode(node, () => { if (ct) ct.cancel(); });
 
-        this.node = node;
+    if (observableExpression) {
+
+        if ((observableExpression as unknown as NormalizedFunction).dispose)
+            appendDestroyCallbackToNode(node, (observableExpression as unknown as NormalizedFunction).dispose);
+
+        appendDestroyCallbackToNode(node, observable.dispose);
     }
 
-    static install(enterClassName: string, enterDuration: number, exitClassName: string, exitDuration: number) {
+    else appendDestroyCallbackToNode(node, subscription.dispose);
 
-        VisibilityAnimator.enterClassName = enterClassName;
-        VisibilityAnimator.enterDuration = enterDuration;
+    appendDestroyCallbackToNode(anchor, () => {
+        if (anchor.previousSibling !== node)
+            destroyNode(node);
+    });
 
-        VisibilityAnimator.exitClassName = exitClassName;
-        VisibilityAnimator.exitDuration = exitDuration;
+    bindProperties(node, domProperties);
+
+    if (node.childNodes.length) {
+
+        let result = document.createDocumentFragment();
+
+        result.appendChild(node);
+        result.appendChild(anchor);
+
+        return result;
     }
 
-    static enterClassName: string;
-    static enterDuration: number;
-
-    static exitClassName: string;
-    static exitDuration: number;
+    else return anchor;
 }
 
 export interface VisibilityAnimatorProperties extends HTMLAttributes<HTMLDivElement> {
     expression: Observable<any> | (() => any);
 }
+
+export function installVisibilityAnimator(enterClassName_: string, enterDuration_: number, exitClassName_: string, exitDuration_: number) {
+
+    enterClassName = enterClassName_;
+    enterDuration = enterDuration_;
+
+    exitClassName = exitClassName_;
+    exitDuration = exitDuration_;
+}
+
+let enterClassName: string;
+let enterDuration: number;
+
+let exitClassName: string;
+let exitDuration: number;

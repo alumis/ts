@@ -2,9 +2,7 @@ import { ObservableList, ObservableListNode, ObservableListModification, Observa
 import { ObservableSet } from "./ObservableSet";
 import { ComputedObservable, co } from "./ComputedObservable";
 import { ObservableSubscription } from "./ObservableSubscription";
-
 export class SortedObservableSet<T> extends ObservableList<T> {
-
     constructor(protected sourceSet: ObservableSet<T>, protected compareFn: (a: T, b: T) => number) {
         super();
         let sorted: T[] = [];
@@ -14,7 +12,8 @@ export class SortedObservableSet<T> extends ObservableList<T> {
             this.append(i);
         for (let node = this.head.next; node !== this.tail; node = node.next)
             this.createComparison(node);
-        this._sourceSetSubscription = sourceSet.subscribe((addedItems, removedItems) => {
+        this._sourceSetSubscription = sourceSet.subscribe(async (addedItems, removedItems) => {
+            await this.synchronizeAsync();
             let modifications: ObservableListModification<T>[] = [];
             let previousAndNext = new Set<ObservableListNode<T>>();
             if (removedItems) {
@@ -42,7 +41,9 @@ export class SortedObservableSet<T> extends ObservableList<T> {
                             this.itemToNode.set(i, node);
                             (node.previous = refNode.previous).next = node;
                             (node.next = refNode).previous = node;
-                            modifications.push({ type: ObservableListModificationType.InsertBefore, item: i, refItem: refNode.item });
+                            if (node.next === this.tail)
+                                modifications.push({ type: ObservableListModificationType.Append, item: i });
+                            else modifications.push({ type: ObservableListModificationType.InsertBefore, item: i, refItem: refNode.item });
                             if (node.previous !== this.head)
                                 previousAndNext.add(node.previous);
                             if (node.next !== this.tail)
@@ -60,12 +61,11 @@ export class SortedObservableSet<T> extends ObservableList<T> {
             for (let n of previousAndNext) {
                 this._comparisons.get(n).refresh();
             }
+            this.notifySubscribers(modifications);
         });
     }
-
     private _comparisons = new Map<ObservableListNode<T>, ComputedObservable<string>>();
     private _sourceSetSubscription: ObservableSubscription<(addedItems: T[], removedItems: T[]) => any>;
-
     private createComparison(node: ObservableListNode<T>) {
         let o = co(() => {
             if (node.previous !== this.head) {
@@ -80,11 +80,9 @@ export class SortedObservableSet<T> extends ObservableList<T> {
         o.subscribe(this.reflow);
         this._comparisons.set(node, o);
     }
-
     private _reflowHandle: number;
     private _synchronizationPromise: Promise<void>;
     private _resolveSynchronizationPromise: () => void;
-
     private reflow = (n: string) => {
         if (this._reflowHandle)
             return;
@@ -118,13 +116,11 @@ export class SortedObservableSet<T> extends ObservableList<T> {
             }
         }, 0) as any;
     };
-
     synchronizeAsync() {
         if (this._reflowHandle)
             return this._synchronizationPromise || (this._synchronizationPromise = new Promise((resolve, reject) => { this._resolveSynchronizationPromise = resolve; }));
         else return Promise.resolve();
     }
-
     dispose() {
         super.dispose();
         this._comparisons.forEach(o => { o.dispose(); });
@@ -133,7 +129,6 @@ export class SortedObservableSet<T> extends ObservableList<T> {
         delete this._sourceSetSubscription;
     }
 }
-
 function normalizeComparison(n: number) {
     if (n < 0)
         return -1;
@@ -143,18 +138,15 @@ function normalizeComparison(n: number) {
         return 1;
     return NaN;
 }
-
 declare module "./ObservableSet" {
     interface ObservableSet<T> {
         sort(compareFn: (a: T, b: T) => number): SortedObservableSet<T>;
         sortDisposeSourceWhenDisposed(compareFn: (a: T, b: T) => number): SortedObservableSet<T>;
     }
 }
-
 ObservableSet.prototype.sort = function <T>(compareFn: (a: T, b: T) => number) {
     return new SortedObservableSet(this, compareFn);
 };
-
 ObservableSet.prototype.sortDisposeSourceWhenDisposed = function <T>(compareFn: (a: T, b: T) => number) {
     let result = new SortedObservableSet(this, compareFn);
     result.dispose = () => { result.dispose(); this.dispose(); };
