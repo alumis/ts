@@ -115,10 +115,8 @@ export function destroyNode(node: Node) {
     if (node.childNodes.length) { // Depth first, post-order tree traversal
         for (let child = node.firstChild; ;) {
             let lastManagedChild: ChildNode = child[LAST_MANAGED_CHILD_KEY];
-            if (lastManagedChild) {
-                while (child !== lastManagedChild)
-                    child = child.nextSibling;
-            }
+            if (lastManagedChild)
+                child = lastManagedChild;
             else destroyNode(child);
             if (!(child = child.nextSibling))
                 break;
@@ -380,11 +378,12 @@ function createDocumentFragment(children: any[]) {
 }
 
 export function Managed(_attributes: {}, children: any[]) {
-    let documentFragment = document.createDocumentFragment(), comment = document.createComment(" managed ");
-    documentFragment.appendChild(comment);
+    let documentFragment = document.createDocumentFragment(), head = document.createComment(" managed head "), tail = document.createComment(" managed tail ");
+    documentFragment.appendChild(head);
     for (let c of children)
         appendChild(documentFragment, c);
-    comment[LAST_MANAGED_CHILD_KEY] = documentFragment.lastChild;
+    documentFragment.appendChild(tail);
+    head[LAST_MANAGED_CHILD_KEY] = tail;
     return documentFragment;
 }
 
@@ -417,16 +416,8 @@ export function replaceChildNodesWithDocumentFragment(parentNode: Node, document
 export function destroyDocumentFragment(documentFragment: DocumentFragment) {
     for (let child = documentFragment.firstChild; child;) {
         let lastManagedChild: ChildNode = child[LAST_MANAGED_CHILD_KEY];
-        if (lastManagedChild) {
-            if (child === lastManagedChild)
-                child = child.nextSibling;
-            else {
-                child = child.nextSibling;
-                while (child !== lastManagedChild) {
-                    child = child.nextSibling;
-                }
-            }
-        }
+        if (lastManagedChild)
+            child = lastManagedChild.nextSibling;
         else {
             destroyNode(child);
             child = child.nextSibling;
