@@ -61,8 +61,8 @@ export class MappedObservableList<T, U> extends ObservableList<U> {
                         break;
                     }
                 }
-                this.notifySubscribers(mappedModifications);
             }
+            this.notifySubscribers(mappedModifications);
         });
     }
 
