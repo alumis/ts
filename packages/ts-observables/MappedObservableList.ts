@@ -89,7 +89,7 @@ ObservableList.prototype.map = function <T, U>(callbackfn: (value: T) => U) {
 };
 
 ObservableList.prototype.mapDisposeSourceWhenDisposed = function <T, U>(callbackfn: (value: T) => U) {
-    let result = new MappedObservableList(this, callbackfn);
-    result.dispose = () => { result.dispose(); this.dispose(); };
+    let result = new MappedObservableList(this, callbackfn), dispose = result.dispose.bind(result);
+    result.dispose = () => { dispose(); this.dispose(); };
     return result;
 };

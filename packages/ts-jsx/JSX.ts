@@ -248,8 +248,16 @@ export function bindProperty(element: Element, name: string, expression: any | O
                     case "valueAsDate":
                     case "valueAsNumber": {
                         let listener = (_e: Event) => { expression.setValueDontNotifySubscription(element[name], subscription); };
-                        element.addEventListener("input", listener);
-                        appendDestroyCallbackToNode(element, () => { element.removeEventListener("input", listener) });
+                        switch (element.tagName) {
+                            case "INPUT":
+                                element.addEventListener("input", listener);
+                                appendDestroyCallbackToNode(element, () => { element.removeEventListener("input", listener) });
+                                break;
+                            case "SELECT":
+                                element.addEventListener("change", listener);
+                                appendDestroyCallbackToNode(element, () => { element.removeEventListener("change", listener) });
+                                break;
+                        }
                         break;
                     }
                     case "checked": {
