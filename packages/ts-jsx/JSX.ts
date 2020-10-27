@@ -149,8 +149,8 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
             switch (m.type) {
                 case ObservableListModificationType.Append: {
                     appendChild(documentFragment, m.item);
-                    let item: ListItem = { firstChild: documentFragment.firstChild, lastChild: documentFragment.lastChild };
-                    items.set(m.item, item);
+                    if (!items.has(m.item))
+                        items.set(m.item, { firstChild: documentFragment.firstChild, lastChild: documentFragment.lastChild });
                     parentNode.insertBefore(documentFragment, observableListNodeDestroyedComment);
                     break;
                 }
@@ -280,10 +280,6 @@ export function bindProperty(element: Element, name: string, expression: any | O
     }
 }
 
-globalPropertyHandlers.set("style", (element: HTMLElement, value: Partial<CSSStyleDeclaration>) => {
-    Object.assign(element.style, value);
-});
-
 globalPropertyHandlers.set("role", (element: HTMLElement, value: string | Observable<string> | (() => string)) => {
     if (isObservable(value)) {
         let subscription = (value as Observable<any>).subscribeInvokeSneakInLine(n => { element.setAttribute("role", n); });
@@ -371,6 +367,30 @@ export function bindCssVariable(element: HTMLElement, name: string, expression: 
     }
     else element.style.setProperty(name, expression);
 }
+
+
+export function bindStyle(element: HTMLElement, value: Partial<ObservableCSSStyleDeclaration>) {
+    for (let p in value) {
+        let v = value[p];
+        if (typeof v === "string")
+            element.style[p] = v;
+        else if (isObservable(v)) {
+            let subscription = (v as Observable<string>).subscribeInvokeSneakInLine(n => {
+                element.style[p] = n;
+            });
+            appendDestroyCallbackToNode(element, subscription.dispose);
+        }
+        else {
+            let computedObservable = co(v as () => string);
+            computedObservable.subscribeInvokeSneakInLine(n => {
+                element.style[p] = n;
+            });
+            appendDestroyCallbackToNode(element, computedObservable.dispose);
+        }
+    }
+}
+
+globalPropertyHandlers.set("style", bindStyle);
 
 function createNodeFromFunction(fn, properties: { [name: string]: any }, children: any[]) {
     if (fn.prototype instanceof Component)
@@ -564,7 +584,7 @@ export type HTMLAttributes<T extends HTMLElement> =
     & { [P in keyof ApplicableNonFunctionProperties<T>]?: ApplicableNonFunctionProperties<T>[P] | Observable<ApplicableNonFunctionProperties<T>[P]> | (() => ApplicableNonFunctionProperties<T>[P]); }
     & { [P in keyof AriaAttributes]?: AriaAttributes[P] | Observable<AriaAttributes[P]> | (() => AriaAttributes[P]); }
     & { role?: string | Observable<string> | (() => string); }
-    & { style?: Partial<CSSStyleDeclaration>; } // TODO: Support observables
+    & { style?: Partial<ObservableCSSStyleDeclaration>; }
     & { toggle?: { [name: string]: boolean | Observable<boolean> | (() => boolean); }; }
     & { switch?: Observable<string> | (() => string) | (Observable<string> | (() => string))[]; }
     & { [P in keyof FunctionProperties<T>]?: FunctionProperties<T>[P]; };
@@ -572,7 +592,7 @@ export type HTMLAttributes<T extends HTMLElement> =
 export type SVGAttributes<T extends SVGElement> =
     & { [P in keyof ApplicableNonFunctionProperties<T>]?: ApplicableNonFunctionProperties<T>[P] | Observable<ApplicableNonFunctionProperties<T>[P]> | (() => ApplicableNonFunctionProperties<T>[P]); }
     & { [P in keyof AriaAttributes]?: AriaAttributes[P] | Observable<AriaAttributes[P]> | (() => AriaAttributes[P]); }
-    & { style?: Partial<CSSStyleDeclaration>; }
+    & { style?: Partial<ObservableCSSStyleDeclaration>; }
     & { toggle?: { [name: string]: boolean | Observable<boolean> | (() => boolean); }; }
     & { switch?: Observable<string> | (() => string) | (Observable<string> | (() => string))[]; }
     & { [P in keyof FunctionProperties<T>]?: FunctionProperties<T>[P]; };
@@ -764,3 +784,5 @@ export interface AriaAttributes {
     /** Defines the human readable text alternative of aria-valuenow for a range widget. */
     "aria-valuetext"?: string;
 }
+
+export type ObservableCSSStyleDeclaration = { [P in keyof ApplicableNonFunctionProperties<CSSStyleDeclaration>]?: ApplicableNonFunctionProperties<CSSStyleDeclaration>[P] | Observable<ApplicableNonFunctionProperties<CSSStyleDeclaration>[P]> | (() => ApplicableNonFunctionProperties<CSSStyleDeclaration>[P]); };

@@ -15,12 +15,21 @@ export class MappedObservableList<T, U> extends ObservableList<U> {
             for (let m of modifications) {
                 switch (m.type) {
                     case ObservableListModificationType.Append: {
-                        let mappedItem = this.callbackfn(m.item), node = { item: mappedItem } as any;
-                        this.itemToNode.set(mappedItem, node);
+                        let node: ObservableListNode<U>, mappedItem = this._map.get(m.item);
+                        if (mappedItem) {
+                            node = this.itemToNode.get(mappedItem);
+                            let previous = node.previous, next = node.next;
+                            previous.next = next;
+                            next.previous = previous;
+                        }
+                        else {
+                            mappedItem = this.callbackfn(m.item);
+                            this.itemToNode.set(mappedItem, node = { item: mappedItem } as any);
+                            this._map.set(m.item, mappedItem);
+                        }
                         (node.previous = this.tail.previous).next = node;
                         (node.next = this.tail).previous = node;
                         mappedModifications.push({ type: ObservableListModificationType.Append, item: mappedItem });
-                        this._map.set(m.item, mappedItem);
                         break;
                     }
                     case ObservableListModificationType.InsertBefore: {

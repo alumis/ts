@@ -1,6 +1,6 @@
 {
   "name": "@alumis/ts",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A TypeScript front-end web framework that combines JSX together with an observer pattern to build user interfaces",
   "repository": {
     "type": "git",

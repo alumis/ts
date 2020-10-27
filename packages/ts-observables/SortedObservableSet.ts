@@ -148,7 +148,7 @@ ObservableSet.prototype.sort = function <T>(compareFn: (a: T, b: T) => number) {
     return new SortedObservableSet(this, compareFn);
 };
 ObservableSet.prototype.sortDisposeSourceWhenDisposed = function <T>(compareFn: (a: T, b: T) => number) {
-    let result = new SortedObservableSet(this, compareFn);
-    result.dispose = () => { result.dispose(); this.dispose(); };
+    let result = new SortedObservableSet(this, compareFn), dispose = result.dispose.bind(result);
+    result.dispose = () => { dispose(); this.dispose(); };
     return result;
 };

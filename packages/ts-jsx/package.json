@@ -1,6 +1,6 @@
 {
   "name": "@alumis/ts-jsx",
-  "version": "1.0.32",
+  "version": "1.0.34",
   "description": "A TypeScript JSX library that utilizes @alumis/ts-observables.",
   "repository": {
     "type": "git",
@@ -23,6 +23,6 @@
     "@alumis/ts-async": "^1.0.0"
   },
   "dependencies": {
-    "@alumis/ts-observables": "^1.0.1"
+    "@alumis/ts-observables": "^1.0.6"
   }
 }

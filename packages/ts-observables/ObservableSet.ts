@@ -151,7 +151,7 @@ export class ObservableSet<T> {
         return ObservableSubscription.createAndAppendToHead(this._subscriptionHead, action);
     }
 
-    private notifySubscribers(addedItems: T[], removedItems: T[]) {
+    protected notifySubscribers(addedItems: T[], removedItems: T[]) {
         for (let node = this._subscriptionHead.next; node != this._subscriptionTail;) {
             let currentNode = node;
             node = node.next;
