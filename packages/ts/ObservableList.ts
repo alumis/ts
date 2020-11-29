@@ -85,6 +85,16 @@ export class ObservableList<T> {
         };
     }
 
+    reconcile(items: Iterable<T>) {
+        if (!(items instanceof Set))
+            items = new Set(items);
+        for (let i of this.itemToNode.keys())
+            if (!(items as Set<T>).has(i))
+                this.remove(i);
+        for (let i of items)
+            this.append(i);
+    }
+
     subscribe(action: (modifications: ObservableListModification<T>[]) => any) {
         return ObservableSubscription.createAndPrependToTail(this._subscriptionsTail, action);
     }
