@@ -250,6 +250,7 @@ export function bindProperty(element: Element, name: string, expression: any | O
                         let listener = (_e: Event) => { expression.setValueDontNotifySubscription(element[name], subscription); };
                         switch (element.tagName) {
                             case "INPUT":
+                            case "TEXTAREA":
                                 element.addEventListener("input", listener);
                                 appendDestroyCallbackToNode(element, () => { element.removeEventListener("input", listener) });
                                 break;
@@ -390,7 +391,7 @@ export function bindStyle(element: HTMLElement, value: Partial<ObservableCSSStyl
     }
 }
 
-globalPropertyHandlers.set("style", bindStyle);
+globalPropertyHandlers.set("style", bindStyle as any);
 
 function createNodeFromFunction(fn, properties: { [name: string]: any }, children: any[]) {
     if (fn.prototype instanceof Component)
