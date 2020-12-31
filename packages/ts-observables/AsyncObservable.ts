@@ -6,7 +6,7 @@ import { Observable } from "./Observable";
 
 export class AsyncObservable<T> implements Observable<T> {
 
-    constructor(private loadAsyncFn: (cancellationToken: CancellationToken) => T) {
+    constructor(private loadAsyncFn: (cancellationToken: CancellationToken) => Promise<T>) {
     }
 
     private _loadFinished: boolean;
@@ -27,8 +27,10 @@ export class AsyncObservable<T> implements Observable<T> {
                 try {
                     var value = await this.loadAsyncFn(cancellationToken);
                     if (cancellationToken.isCancellationRequested) {
-                        if (this._loadPromise === loadPromise)
+                        if (this._loadPromise === loadPromise) {
+                            this._cancellationToken = cancellationToken = new CancellationToken();
                             continue;
+                        }
                         else throw new OperationCancelledError();
                     }
                 }
@@ -108,8 +110,18 @@ export class AsyncObservable<T> implements Observable<T> {
         this._computedValue.dispose();
         this._state.dispose();
     }
-    
-    update(loadAsyncFn: (cancellationToken: CancellationToken) => T) {
+
+    restartIfLoadIsOngoingOrFinished() {
+        this._state.value = null;
+        if (this._loadPromise)
+            this._cancellationToken.cancel();
+        else if (this._loadFinished) {
+            this._loadFinished = false;
+            this.ensureLoadFinishedAsync();
+        }
+    }
+
+    update(loadAsyncFn: (cancellationToken: CancellationToken) => Promise<T>) {
         if (this.loadAsyncFn !== loadAsyncFn) {
             this.loadAsyncFn = loadAsyncFn;
             this._state.value = null;
