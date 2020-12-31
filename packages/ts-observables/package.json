@@ -1,6 +1,6 @@
 {
   "name": "@alumis/ts-observables",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A TypeScript observable library.",
   "repository": {
     "type": "git",
