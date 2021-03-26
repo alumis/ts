@@ -19,13 +19,13 @@ export class FilteredObservableSet<T> extends ObservableSet<T> {
 
             if (addedItems) {
 
-                var addedItems: T[] = [];
+                var addedItems2: T[] = [];
 
                 for (let i of addedItems) {
                     if (!this.wrappedValue.has(i)) {
                         if (this.createComparison(i).peek()) {
                             this.wrappedValue.add(i);
-                            addedItems.push(i);
+                            addedItems2.push(i);
                         }
                     }
                 }
@@ -33,7 +33,7 @@ export class FilteredObservableSet<T> extends ObservableSet<T> {
 
             if (removedItems) {
 
-                var removedItems: T[] = [];
+                var removedItems2: T[] = [];
 
                 for (let i of removedItems) {
 
@@ -43,13 +43,13 @@ export class FilteredObservableSet<T> extends ObservableSet<T> {
                         this._comparisons.delete(i);
 
                         if (this.wrappedValue.delete(i))
-                            removedItems.push(i);
+                            removedItems2.push(i);
                     }
                 }
             }
 
-            if (addedItems && addedItems.length || removedItems && removedItems.length)
-                this.notifySubscribers(addedItems, removedItems);
+            if (addedItems2 && addedItems2.length || removedItems2 && removedItems2.length)
+                this.notifySubscribers(addedItems2, removedItems2);
         });
     }
 
@@ -122,11 +122,11 @@ export class FilteredObservableSet<T> extends ObservableSet<T> {
 
 declare module "./ObservableSet" {
     interface ObservableSet<T> {
-        filer(compareFn: (i: T) => boolean): FilteredObservableSet<T>;
+        filter(compareFn: (i: T) => boolean): FilteredObservableSet<T>;
         filterDisposeSourceWhenDisposed(compareFn: (i: T) => boolean): FilteredObservableSet<T>;
     }
 }
-ObservableSet.prototype.filer = function <T>(compareFn: (i: T) => boolean) {
+ObservableSet.prototype.filter = function <T>(compareFn: (i: T) => boolean) {
     return new FilteredObservableSet(this, compareFn);
 };
 ObservableSet.prototype.filterDisposeSourceWhenDisposed = function <T>(compareFn: (i: T) => boolean) {
