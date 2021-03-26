@@ -35,6 +35,26 @@ export class ObservableList<T> {
         this.notifySubscribers([{ type: ObservableListModificationType.Append, item: item }]);
     }
 
+    appendItems(items: Iterable<T>) {
+        let modifications: ObservableListModification<T>[] = [];
+        for (let i of items) {
+            let node = this.itemToNode.get(i);
+            if (node) {
+                if (node.next === this.tail)
+                    continue;
+                let previous = node.previous, next = node.next;
+                previous.next = next;
+                next.previous = previous;
+            }
+            else this.itemToNode.set(i, node = { item: i } as any);
+            (node.previous = this.tail.previous).next = node;
+            (node.next = this.tail).previous = node;
+            modifications.push({ type: ObservableListModificationType.Append, item: i });
+        }
+        if (modifications.length)
+            this.notifySubscribers(modifications);
+    }
+
     remove(item: T) {
         let node = this.itemToNode.get(item);
         if (node) {
@@ -44,6 +64,22 @@ export class ObservableList<T> {
             next.previous = previous;
             this.notifySubscribers([{ type: ObservableListModificationType.Remove, item: item }]);
         }
+    }
+
+    removeItems(items: Iterable<T>) {
+        let modifications: ObservableListModification<T>[] = [];
+        for (let i of items) {
+            let node = this.itemToNode.get(i);
+            if (node) {
+                this.itemToNode.delete(i);
+                let previous = node.previous, next = node.next;
+                previous.next = next;
+                next.previous = previous;
+                modifications.push({ type: ObservableListModificationType.Remove, item: i });
+            }
+        }
+        if (modifications.length)
+            this.notifySubscribers(modifications);
     }
 
     insertBefore(newItem: T, refItem: T) {
@@ -103,7 +139,7 @@ export class ObservableList<T> {
         return ObservableSubscription.createAndAppendToHead(this._subscriptionsHead, action);
     }
 
-    protected notifySubscribers(modifications: ObservableListModification<T>[]) {
+    notifySubscribers(modifications: ObservableListModification<T>[]) {
         for (let node = this._subscriptionsHead.next; node != this._subscriptionsTail;) {
             let currentNode = node;
             node = node.next;
