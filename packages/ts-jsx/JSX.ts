@@ -148,9 +148,24 @@ function appendObservableListChild(parentNode: Node, observableList: ObservableL
         for (let m of modifications) {
             switch (m.type) {
                 case ObservableListModificationType.Append: {
-                    appendChild(documentFragment, m.item);
-                    if (!items.has(m.item))
+                    let item = items.get(m.item);
+                    if (item) {
+                        if (item.lastChild.nextSibling === observableListNodeDestroyedComment)
+                            break;
+                        for (let node = item.firstChild; ;) {
+                            if (node === item.lastChild) {
+                                documentFragment.appendChild(node);
+                                break;
+                            }
+                            let n = node;
+                            node = node.nextSibling;
+                            documentFragment.appendChild(n);
+                        }
+                    }
+                    else {
+                        appendChild(documentFragment, m.item);
                         items.set(m.item, { firstChild: documentFragment.firstChild, lastChild: documentFragment.lastChild });
+                    }
                     parentNode.insertBefore(documentFragment, observableListNodeDestroyedComment);
                     break;
                 }

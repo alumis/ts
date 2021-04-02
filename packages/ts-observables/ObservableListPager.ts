@@ -100,4 +100,9 @@ export class ObservableListPager<T> extends ObservableList<T> {
         this._currentPage = 1;
         this._isComplete = false;
     }
+
+    dispose() {
+        super.dispose();
+        this.cancelLoadMore();
+    }
 }
