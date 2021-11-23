@@ -1,6 +1,6 @@
 {
   "name": "test-workspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@alumis/babel-plugin-transform-jsx": "^7.8.6",
