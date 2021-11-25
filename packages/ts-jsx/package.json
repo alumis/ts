@@ -1,6 +1,6 @@
 {
   "name": "@alumis/ts-jsx",
-  "version": "1.2.5",
+  "version": "1.2.7",
   "description": "A TypeScript JSX library that utilizes @alumis/ts-observables.",
   "repository": {
     "type": "git",
